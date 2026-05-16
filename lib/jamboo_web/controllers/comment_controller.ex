@@ -10,10 +10,11 @@ defmodule JambooWeb.CommentController do
         conn
         |> put_flash(:info, "Комментарий добавлен")
         |> redirect(to: ~p"/posts/#{post}")
-      {:error, _changeset} ->
+      {:error, changeset} ->
+        comments = Comments.list_comments_for_post(post.id)
         conn
         |> put_flash(:error, "Ошибка при добавлении комментария")
-        |> redirect(to: ~p"/posts/#{post}")
+        |> render(JambooWeb.PostHTML, :show, post: post, comments: comments, form: to_form(changeset))
     end
   end
 end
