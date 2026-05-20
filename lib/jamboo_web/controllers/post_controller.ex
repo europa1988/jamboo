@@ -60,17 +60,17 @@ defmodule JambooWeb.PostController do
   # HTMX голосование
   def upvote(conn, %{"id" => id}) do
     {:ok, post} = Content.upvote(id)
-    html = JambooWeb.PostHTML.render_post_vote(post)
+
     conn
     |> put_resp_header("content-type", "text/html; charset=utf-8")
-    |> send_resp(200, html)
+    |> send_resp(200, Phoenix.HTML.Safe.to_iodata(JambooWeb.PostHTML.render_post_vote(post)))
   end
 
   def downvote(conn, %{"id" => id}) do
     {:ok, post} = Content.downvote(id)
-    html = JambooWeb.PostHTML.render_post_vote(post)
+
     conn
     |> put_resp_header("content-type", "text/html; charset=utf-8")
-    |> send_resp(200, html)
+    |> send_resp(200, Phoenix.HTML.Safe.to_iodata(JambooWeb.PostHTML.render_post_vote(post)))
   end
 end

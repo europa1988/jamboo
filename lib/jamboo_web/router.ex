@@ -7,6 +7,7 @@ defmodule JambooWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, html: {JambooWeb.Layouts, :root}
     plug :put_secure_browser_headers
+    plug :assign_current_scope
   end
 
   pipeline :api do
@@ -14,12 +15,19 @@ defmodule JambooWeb.Router do
   end
 
   scope "/", JambooWeb do
-    post "/posts/:post_id/comments", CommentController, :create
     pipe_through :browser
 
     get "/", PostController, :index
     resources "/posts", PostController
+    post "/posts/:post_id/comments", CommentController, :create
     put "/posts/:id/upvote", PostController, :upvote
     put "/posts/:id/downvote", PostController, :downvote
+  end
+
+  defp assign_current_scope(conn, _opts) do
+    case conn.assigns do
+      %{current_scope: _} -> conn
+      _ -> Plug.Conn.assign(conn, :current_scope, nil)
+    end
   end
 end
