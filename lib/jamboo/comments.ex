@@ -10,9 +10,13 @@ defmodule Jamboo.Comments do
   end
 
   def create_comment(post_id, attrs) do
-    int_post_id = String.to_integer("#{post_id}")
+    post_id =
+      case post_id do
+        id when is_binary(id) -> String.to_integer(id)
+        id -> id
+      end
 
-    %Comment{post_id: int_post_id}
+    %Comment{post_id: post_id}
     |> Comment.changeset(attrs)
     |> Repo.insert()
   end
