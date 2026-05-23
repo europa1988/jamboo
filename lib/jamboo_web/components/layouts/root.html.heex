@@ -13,11 +13,13 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
+  <.flash_group flash={@flash} />
+
   <!-- Верхняя панель навигации -->
   <header class="bg-white dark:bg-gray-800 shadow">
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
       <a href={~p"/"} class="flex items-center gap-2">
-        <span class="material-icons text-jamboo-orange">forum</span>
+        <.icon name="hero-chat-bubble-left-right" class="size-6 text-jamboo-orange" />
         <span class="text-xl font-bold text-jamboo-orange">Jamboo</span>
       </a>
 
