@@ -21,13 +21,13 @@
     </div>
     <div class="flex gap-3">
       <button class="flex items-center gap-1 text-sm text-jamboo-dark-gray px-3 py-1 rounded-small hover:bg-jamboo-light-gray transition dark:text-gray-400 dark:hover:bg-gray-700">
-        <span class="material-icons text-base">chat_bubble</span> <%= length(@comments) %> Комментариев
+        <.icon name="hero-chat-bubble-left" class="size-4" /> <%= length(@comments) %> Комментариев
       </button>
       <button class="flex items-center gap-1 text-sm text-jamboo-dark-gray px-3 py-1 rounded-small hover:bg-jamboo-light-gray transition dark:text-gray-400 dark:hover:bg-gray-700">
-        <span class="material-icons text-base">share</span> Поделиться
+        <.icon name="hero-share" class="size-4" /> Поделиться
       </button>
       <button class="flex items-center gap-1 text-sm text-jamboo-dark-gray px-3 py-1 rounded-small hover:bg-jamboo-light-gray transition dark:text-gray-400 dark:hover:bg-gray-700">
-        <span class="material-icons text-base">bookmark</span> Сохранить
+        <.icon name="hero-bookmark" class="size-4" /> Сохранить
       </button>
     </div>
   </div>
@@ -61,10 +61,17 @@
   <!-- Форма добавления комментария -->
   <div class="bg-white rounded-global shadow-sm p-4 mt-4 dark:bg-dark-card">
     <h3 class="font-bold mb-3 dark:text-dark-text">Оставить комментарий</h3>
-    <form action={~p"/posts/#{@post.id}/comments"} method="post">
-      <input type="hidden" name="comment[author_nickname]" value="Гость">
-      <textarea name="comment[body]" rows="3" class="w-full p-3 bg-jamboo-light-gray border border-jamboo-border rounded-element focus:outline-none focus:ring-2 focus:ring-jamboo-blue transition text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Напишите комментарий..." required></textarea>
+    <.form :let={f} for={@comment_form} action={~p"/posts/#{@post.id}/comments"} id="comment-form">
+      <.input field={f[:author_nickname]} type="hidden" value="Гость" />
+      <.input
+        field={f[:body]}
+        type="textarea"
+        rows="3"
+        class="w-full p-3 bg-jamboo-light-gray border border-jamboo-border rounded-element focus:outline-none focus:ring-2 focus:ring-jamboo-blue transition text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+        placeholder="Напишите комментарий..."
+        required
+      />
       <button type="submit" class="mt-3 px-4 py-2 bg-jamboo-orange text-white rounded-button hover:opacity-90 transition font-medium">Отправить</button>
-    </form>
+    </.form>
   </div>
 </div>
