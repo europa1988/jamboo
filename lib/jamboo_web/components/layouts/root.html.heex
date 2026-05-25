@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" class={if assigns[:dark], do: "dark", else: ""}>
+<html lang="ru" class={[assigns[:dark] && "dark"]}>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -17,7 +17,7 @@
   <header class="bg-white dark:bg-gray-800 shadow">
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
       <a href={~p"/"} class="flex items-center gap-2">
-        <span class="material-icons text-jamboo-orange">forum</span>
+        <.icon name="hero-chat-bubble-left-right" class="text-jamboo-orange size-6" />
         <span class="text-xl font-bold text-jamboo-orange">Jamboo</span>
       </a>
 
@@ -26,7 +26,7 @@
 
         <%= if @current_scope do %>
           <span class="text-gray-500 dark:text-gray-300">
-            <%= @current_scope.email %>
+            {@current_scope.email}
           </span>
           <.link href={~p"/users/settings"} class="hover:underline">
             Настройки
