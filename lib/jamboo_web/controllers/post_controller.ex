@@ -17,7 +17,7 @@ defmodule JambooWeb.PostController do
 
   def new(conn, _params) do
     changeset = Content.change_post(%Post{})
-    render(conn, :new, changeset: changeset)
+    render(conn, :new, form: to_form(changeset))
   end
 
   def create(conn, %{"post" => post_params}) do
@@ -26,26 +26,29 @@ defmodule JambooWeb.PostController do
         conn
         |> put_flash(:info, "Пост создан!")
         |> redirect(to: ~p"/posts/#{post}")
+
       {:error, changeset} ->
-        render(conn, :new, changeset: changeset)
+        render(conn, :new, form: to_form(changeset))
     end
   end
 
   def edit(conn, %{"id" => id}) do
     post = Content.get_post!(id)
     changeset = Content.change_post(post)
-    render(conn, :edit, post: post, changeset: changeset)
+    render(conn, :edit, post: post, form: to_form(changeset))
   end
 
   def update(conn, %{"id" => id, "post" => post_params}) do
     post = Content.get_post!(id)
+
     case Content.update_post(post, post_params) do
       {:ok, post} ->
         conn
         |> put_flash(:info, "Пост обновлён!")
         |> redirect(to: ~p"/posts/#{post}")
+
       {:error, changeset} ->
-        render(conn, :edit, post: post, changeset: changeset)
+        render(conn, :edit, post: post, form: to_form(changeset))
     end
   end
 
@@ -60,7 +63,15 @@ defmodule JambooWeb.PostController do
   # HTMX голосование
   def upvote(conn, %{"id" => id}) do
     {:ok, post} = Content.upvote(id)
-    html = JambooWeb.PostHTML.render_post_vote(post)
+
+    html =
+      Phoenix.LiveView.TagEngine.component(
+        &JambooWeb.PostHTML.render_post_vote/1,
+        [post: post],
+        {__ENV__.module, __ENV__.function, __ENV__.file, __ENV__.line}
+      )
+      |> Phoenix.HTML.Safe.to_iodata()
+
     conn
     |> put_resp_header("content-type", "text/html; charset=utf-8")
     |> send_resp(200, html)
@@ -68,7 +79,15 @@ defmodule JambooWeb.PostController do
 
   def downvote(conn, %{"id" => id}) do
     {:ok, post} = Content.downvote(id)
-    html = JambooWeb.PostHTML.render_post_vote(post)
+
+    html =
+      Phoenix.LiveView.TagEngine.component(
+        &JambooWeb.PostHTML.render_post_vote/1,
+        [post: post],
+        {__ENV__.module, __ENV__.function, __ENV__.file, __ENV__.line}
+      )
+      |> Phoenix.HTML.Safe.to_iodata()
+
     conn
     |> put_resp_header("content-type", "text/html; charset=utf-8")
     |> send_resp(200, html)
