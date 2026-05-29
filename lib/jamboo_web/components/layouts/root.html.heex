@@ -16,10 +16,10 @@
   <!-- Верхняя панель навигации -->
   <header class="bg-white dark:bg-gray-800 shadow">
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-      <a href={~p"/"} class="flex items-center gap-2">
-        <span class="material-icons text-jamboo-orange">forum</span>
+      <.link navigate={~p"/"} class="flex items-center gap-2">
+        <.icon name="hero-chat-bubble-left-right" class="size-6 text-jamboo-orange" />
         <span class="text-xl font-bold text-jamboo-orange">Jamboo</span>
-      </a>
+      </.link>
 
       <nav class="flex items-center gap-4 text-sm">
         <a href={~p"/"} class="hover:underline">Лента</a>
@@ -47,9 +47,8 @@
   </header>
 
   <!-- Основной контент -->
-  <main class="container mx-auto px-4 py-6">
-    <%= @inner_content %>
-  </main>
+  <.flash_group flash={@flash} />
+  <%= @inner_content %>
 
   <!-- Футер -->
   <footer class="bg-white dark:bg-gray-800 border-t border-jamboo-border dark:border-dark-border mt-8">
