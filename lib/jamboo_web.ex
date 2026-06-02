@@ -27,6 +27,9 @@ defmodule JambooWeb do
       import Phoenix.Component
       import Phoenix.HTML
       import JambooWeb.Gettext
+      import JambooWeb.CoreComponents
+
+      alias JambooWeb.Layouts
 
       unquote(verified_routes())
     end
@@ -47,6 +50,7 @@ defmodule JambooWeb do
       use Phoenix.Component
 
       import Phoenix.Component
+      import JambooWeb.CoreComponents
 
       unquote(verified_routes())
     end

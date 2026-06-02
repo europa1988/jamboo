@@ -93,11 +93,13 @@ defmodule JambooWeb.CoreComponents do
   slot :inner_block, required: true
 
   def button(%{rest: rest} = assigns) do
-    variants = %{"primary" => "btn-primary", nil => "btn-primary btn-soft"}
-
     assigns =
       assign_new(assigns, :class, fn ->
-        ["btn", Map.fetch!(variants, assigns[:variant])]
+        [
+          "inline-flex items-center justify-center px-4 py-2 rounded-button font-medium transition",
+          assigns[:variant] == "primary" && "bg-jamboo-orange text-white hover:opacity-90",
+          assigns[:variant] == nil && "bg-jamboo-light-gray text-gray-700 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+        ]
       end)
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
@@ -253,19 +255,20 @@ defmodule JambooWeb.CoreComponents do
 
   def input(%{type: "textarea"} = assigns) do
     ~H"""
-    <div class="fieldset mb-2">
-      <label for={@id}>
-        <span :if={@label} class="label mb-1">{@label}</span>
-        <textarea
-          id={@id}
-          name={@name}
-          class={[
-            @class || "w-full textarea",
-            @errors != [] && (@error_class || "textarea-error")
-          ]}
-          {@rest}
-        >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
+    <div class="mb-4">
+      <label :if={@label} for={@id} class="block text-gray-700 font-medium mb-2 dark:text-gray-300">
+        {@label}
       </label>
+      <textarea
+        id={@id}
+        name={@name}
+        class={[
+          @class ||
+            "w-full py-3 px-4 bg-jamboo-light-gray border border-jamboo-border rounded-element focus:outline-none focus:ring-2 focus:ring-jamboo-blue transition text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white",
+          @errors != [] && "border-red-500 focus:ring-red-500"
+        ]}
+        {@rest}
+      >{Phoenix.HTML.Form.normalize_value("textarea", @value)}</textarea>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -274,21 +277,22 @@ defmodule JambooWeb.CoreComponents do
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
-    <div class="fieldset mb-2">
-      <label for={@id}>
-        <span :if={@label} class="label mb-1">{@label}</span>
-        <input
-          type={@type}
-          name={@name}
-          id={@id}
-          value={Phoenix.HTML.Form.normalize_value(@type, @value)}
-          class={[
-            @class || "w-full input",
-            @errors != [] && (@error_class || "input-error")
-          ]}
-          {@rest}
-        />
+    <div class="mb-4">
+      <label :if={@label} for={@id} class="block text-gray-700 font-medium mb-2 dark:text-gray-300">
+        {@label}
       </label>
+      <input
+        type={@type}
+        name={@name}
+        id={@id}
+        value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+        class={[
+          @class ||
+            "w-full py-3 px-4 bg-jamboo-light-gray border border-jamboo-border rounded-element focus:outline-none focus:ring-2 focus:ring-jamboo-blue transition text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white",
+          @errors != [] && "border-red-500 focus:ring-red-500"
+        ]}
+        {@rest}
+      />
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
