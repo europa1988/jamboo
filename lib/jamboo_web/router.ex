@@ -7,6 +7,11 @@ defmodule JambooWeb.Router do
     plug :fetch_live_flash
     plug :put_root_layout, html: {JambooWeb.Layouts, :root}
     plug :put_secure_browser_headers
+    plug :assign_current_scope
+  end
+
+  defp assign_current_scope(conn, _opts) do
+    assign(conn, :current_scope, conn.assigns[:current_scope])
   end
 
   pipeline :api do
