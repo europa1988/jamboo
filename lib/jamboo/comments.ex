@@ -16,4 +16,8 @@ defmodule Jamboo.Comments do
     |> Comment.changeset(attrs)
     |> Repo.insert()
   end
+
+  def change_comment(%Comment{} = comment, attrs \\ %{}) do
+    Comment.changeset(comment, attrs)
+  end
 end
