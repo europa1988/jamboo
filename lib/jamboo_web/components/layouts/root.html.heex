@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Jamboo</title>
 
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
+
   <!-- Подключение собранных стилей Tailwind -->
   <link rel="stylesheet" href={~p"/assets/app.css"} />
 
@@ -48,6 +52,7 @@
 
   <!-- Основной контент -->
   <main class="container mx-auto px-4 py-6">
+    <.flash_group flash={@flash} />
     <%= @inner_content %>
   </main>
 

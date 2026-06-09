@@ -3,8 +3,7 @@ defmodule JambooWeb.LayoutHelpers do
   Вспомогательные функции для макетов и внешних скриптов.
   Обеспечивает автономную работу без интернета.
   """
-
-  alias JambooWeb.Router.Helpers, as: Routes
+  use JambooWeb, :html
 
   @doc """
   Возвращает HTML-тег <script> для подключения HTMX:
@@ -13,7 +12,7 @@ defmodule JambooWeb.LayoutHelpers do
   * если загрузка не удалась — подключает HTMX с CDN.
   """
   def htmx_script_tag(conn) do
-    src = Routes.static_path(conn, "/vendor/htmx/htmx.min.js")
+    src = ~p"/vendor/htmx/htmx.min.js"
 
     """
     <script>
