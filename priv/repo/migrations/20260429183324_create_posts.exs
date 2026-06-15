@@ -7,7 +7,7 @@ defmodule Jamboo.Repo.Migrations.CreatePosts do
       add :body, :text
       add :vote_score, :integer, default: 0
       add :author_nickname, :string
-      add :is_microblog, :boolean, default: false
+      add :microblog, :boolean, default: false, null: false
       add :tags, :string
 
       timestamps(type: :utc_datetime)

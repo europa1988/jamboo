@@ -55,7 +55,8 @@ defmodule Jamboo.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
-      {:bandit, "~> 1.5"}
+      {:bandit, "~> 1.5"},
+      {:pbkdf2_elixir, "~> 2.0"}
     ]
   end
 
@@ -67,6 +68,7 @@ defmodule Jamboo.MixProject do
   # See the documentation for `Mix` for more info on aliases.
    defp aliases do
      [
+       precommit: ["format --check-formatted", "test", "compile --warnings-as-errors"],
        setup: ["deps.get", "ecto.setup", "assets.setup", "assets.build"],
        "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
        "ecto.reset": ["ecto.drop", "ecto.setup"],
