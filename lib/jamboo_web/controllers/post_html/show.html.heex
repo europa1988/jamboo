@@ -1,3 +1,4 @@
+<Layouts.app flash={@flash} current_scope={assigns[:current_scope]}>
 <article class="bg-white rounded-global shadow-sm p-6 dark:bg-dark-card">
   <div class="flex items-center gap-2 text-xs text-jamboo-dark-gray mb-4">
     <img src="https://i.pravatar.cc/30?img=3" alt="Автор" class="w-8 h-8 rounded-full">
@@ -17,17 +18,17 @@
   <div class="prose dark:text-dark-text"><%= @post.body %></div>
   <div class="flex items-center gap-4 mt-6">
     <div class="voting-container dark:bg-gray-800">
-      <%= render_post_vote(@post) %>
+      <.post_vote post={@post} />
     </div>
     <div class="flex gap-3">
       <button class="flex items-center gap-1 text-sm text-jamboo-dark-gray px-3 py-1 rounded-small hover:bg-jamboo-light-gray transition dark:text-gray-400 dark:hover:bg-gray-700">
-        <span class="material-icons text-base">chat_bubble</span> <%= length(@comments) %> Комментариев
+        <.icon name="hero-chat-bubble-left" class="w-4 h-4" /> <%= length(@comments) %> Комментариев
       </button>
       <button class="flex items-center gap-1 text-sm text-jamboo-dark-gray px-3 py-1 rounded-small hover:bg-jamboo-light-gray transition dark:text-gray-400 dark:hover:bg-gray-700">
-        <span class="material-icons text-base">share</span> Поделиться
+        <.icon name="hero-share" class="w-4 h-4" /> Поделиться
       </button>
       <button class="flex items-center gap-1 text-sm text-jamboo-dark-gray px-3 py-1 rounded-small hover:bg-jamboo-light-gray transition dark:text-gray-400 dark:hover:bg-gray-700">
-        <span class="material-icons text-base">bookmark</span> Сохранить
+        <.icon name="hero-bookmark" class="w-4 h-4" /> Сохранить
       </button>
     </div>
   </div>
@@ -68,3 +69,4 @@
     </form>
   </div>
 </div>
+</Layouts.app>
