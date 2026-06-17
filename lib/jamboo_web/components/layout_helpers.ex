@@ -3,6 +3,7 @@ defmodule JambooWeb.LayoutHelpers do
   Вспомогательные функции для макетов и внешних скриптов.
   Обеспечивает автономную работу без интернета.
   """
+  use JambooWeb, :html
 
   alias JambooWeb.Router.Helpers, as: Routes
 
