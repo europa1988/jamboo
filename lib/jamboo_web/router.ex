@@ -14,9 +14,9 @@ defmodule JambooWeb.Router do
   end
 
   scope "/", JambooWeb do
-    post "/posts/:post_id/comments", CommentController, :create
     pipe_through :browser
 
+    post "/posts/:post_id/comments", CommentController, :create
     get "/", PostController, :index
     resources "/posts", PostController
     put "/posts/:id/upvote", PostController, :upvote
