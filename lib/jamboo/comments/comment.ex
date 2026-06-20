@@ -15,7 +15,7 @@ defmodule Jamboo.Comments.Comment do
 
   def changeset(comment, attrs) do
     comment
-    |> cast(attrs, [:body, :vote_score, :author_nickname, :post_id, :user_id, :parent_id])
+    |> cast(attrs, [:body, :author_nickname, :parent_id, :post_id])
     |> validate_required([:body, :post_id])
   end
 end
