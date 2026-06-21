@@ -12,12 +12,13 @@ defmodule JambooWeb.PostController do
   def show(conn, %{"id" => id}) do
     post = Content.get_post!(id)
     comments = Comments.list_comments_for_post(post.id)
-    render(conn, :show, post: post, comments: comments)
+    form = to_form(Ecto.Changeset.change(%Jamboo.Comments.Comment{}), as: :comment)
+    render(conn, :show, post: post, comments: comments, form: form)
   end
 
   def new(conn, _params) do
-    changeset = Content.change_post(%Post{})
-    render(conn, :new, changeset: changeset)
+    form = to_form(Content.change_post(%Post{}))
+    render(conn, :new, form: form)
   end
 
   def create(conn, %{"post" => post_params}) do
@@ -27,14 +28,14 @@ defmodule JambooWeb.PostController do
         |> put_flash(:info, "Пост создан!")
         |> redirect(to: ~p"/posts/#{post}")
       {:error, changeset} ->
-        render(conn, :new, changeset: changeset)
+        render(conn, :new, form: to_form(changeset))
     end
   end
 
   def edit(conn, %{"id" => id}) do
     post = Content.get_post!(id)
-    changeset = Content.change_post(post)
-    render(conn, :edit, post: post, changeset: changeset)
+    form = to_form(Content.change_post(post))
+    render(conn, :edit, post: post, form: form)
   end
 
   def update(conn, %{"id" => id, "post" => post_params}) do
@@ -45,7 +46,7 @@ defmodule JambooWeb.PostController do
         |> put_flash(:info, "Пост обновлён!")
         |> redirect(to: ~p"/posts/#{post}")
       {:error, changeset} ->
-        render(conn, :edit, post: post, changeset: changeset)
+        render(conn, :edit, post: post, form: to_form(changeset))
     end
   end
 

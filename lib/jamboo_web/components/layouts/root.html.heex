@@ -4,20 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Jamboo</title>
+  <meta name="csrf-token" content={get_csrf_token()} />
 
   <!-- Подключение собранных стилей Tailwind -->
   <link rel="stylesheet" href={~p"/assets/app.css"} />
 
   <!-- Подключение HTMX: локальный файл + fallback на CDN -->
-  <%= raw(JambooWeb.LayoutHelpers.htmx_script_tag(@conn)) %>
+  {raw(JambooWeb.LayoutHelpers.htmx_script_tag(@conn))}
+  <script>
+    document.body.addEventListener('htmx:configRequest', (event) => {
+      event.detail.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    });
+  </script>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+  <.flash_group flash={@flash} />
 
   <!-- Верхняя панель навигации -->
   <header class="bg-white dark:bg-gray-800 shadow">
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
       <a href={~p"/"} class="flex items-center gap-2">
-        <span class="material-icons text-jamboo-orange">forum</span>
+        <.icon name="hero-chat-bubble-left-right" class="text-jamboo-orange w-6 h-6" />
         <span class="text-xl font-bold text-jamboo-orange">Jamboo</span>
       </a>
 
