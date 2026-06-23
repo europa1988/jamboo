@@ -20,14 +20,29 @@ defmodule JambooWeb.LayoutHelpers do
       if (typeof htmx === 'undefined') {
         const script = document.createElement('script');
         script.src = '#{src}';
-        script.onload = () => console.log('HTMX загружен из локального файла');
+        script.onload = () => {
+          console.log('HTMX загружен из локального файла');
+          initializeHtmx();
+        };
         script.onerror = () => {
           const cdn = document.createElement('script');
           cdn.src = 'https://unpkg.com/htmx.org@2.0.8';
+          cdn.onload = () => {
+            console.log('HTMX загружен из CDN (fallback)');
+            initializeHtmx();
+          };
           document.head.appendChild(cdn);
-          console.log('HTMX загружен из CDN (fallback)');
         };
         document.head.appendChild(script);
+      } else {
+        initializeHtmx();
+      }
+
+      function initializeHtmx() {
+        document.body.addEventListener('htmx:configRequest', (event) => {
+          const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+          event.detail.headers['X-CSRF-Token'] = csrfToken;
+        });
       }
     </script>
     """
