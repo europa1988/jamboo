@@ -14,11 +14,11 @@ defmodule JambooWeb.Router do
   end
 
   scope "/", JambooWeb do
-    post "/posts/:post_id/comments", CommentController, :create
     pipe_through :browser
 
     get "/", PostController, :index
     resources "/posts", PostController
+    post "/posts/:post_id/comments", CommentController, :create
     put "/posts/:id/upvote", PostController, :upvote
     put "/posts/:id/downvote", PostController, :downvote
   end
