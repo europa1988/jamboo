@@ -28,6 +28,8 @@ defmodule JambooWeb.CoreComponents do
   """
   use Phoenix.Component
 
+  import JambooWeb.Gettext
+
   alias Phoenix.LiveView.JS
 
   @doc """
@@ -74,6 +76,25 @@ defmodule JambooWeb.CoreComponents do
           <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
         </button>
       </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Shows the flash group with standard titles and content.
+
+  ## Examples
+
+      <.flash_group flash={@flash} />
+  """
+  attr :flash, :map, required: true, doc: "the map of flash messages"
+  attr :id, :string, default: "flash-group", doc: "the optional id of flash container"
+
+  def flash_group(assigns) do
+    ~H"""
+    <div id={@id}>
+      <.flash kind={:info} title={gettext("Успех!")} flash={@flash} />
+      <.flash kind={:error} title={gettext("Ошибка!")} flash={@flash} />
     </div>
     """
   end
