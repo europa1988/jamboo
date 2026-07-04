@@ -79,6 +79,25 @@ defmodule JambooWeb.CoreComponents do
   end
 
   @doc """
+  Renders a group of flash notices.
+
+  ## Examples
+
+      <.flash_group flash={@flash} />
+  """
+  attr :flash, :map, required: true, doc: "the map of flash messages"
+  attr :id, :string, default: "flash-group", doc: "the optional id of flash container"
+
+  def flash_group(assigns) do
+    ~H"""
+    <div id={@id}>
+      <.flash kind={:info} title="Успех!" flash={@flash} />
+      <.flash kind={:error} title="Ошибка!" flash={@flash} />
+    </div>
+    """
+  end
+
+  @doc """
   Renders a button with navigation support.
 
   ## Examples
