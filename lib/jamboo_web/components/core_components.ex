@@ -294,6 +294,40 @@ defmodule JambooWeb.CoreComponents do
     """
   end
 
+  @doc """
+  Renders a group of flash messages.
+  """
+  attr :id, :string, default: "flash-group"
+  attr :flash, :map, required: true, doc: "the map of flash messages to display"
+
+  def flash_group(assigns) do
+    ~H"""
+    <div id={@id}>
+      <.flash kind={:info} title="Успех!" flash={@flash} />
+      <.flash kind={:error} title="Ошибка!" flash={@flash} />
+      <.flash
+        id="client-error"
+        kind={:error}
+        title="Ошибка соединения!"
+        phx-disconnected={show(".phx-client-error #client-error")}
+        phx-connected={hide("#client-error")}
+      >
+        Попытка восстановить соединение...
+      </.flash>
+
+      <.flash
+        id="server-error"
+        kind={:error}
+        title="Ошибка сервера!"
+        phx-disconnected={show(".phx-server-error #server-error")}
+        phx-connected={hide("#server-error")}
+      >
+        Сервер недоступен. Пожалуйста, подождите.
+      </.flash>
+    </div>
+    """
+  end
+
   # Helper used by inputs to generate form errors
   defp error(assigns) do
     ~H"""
