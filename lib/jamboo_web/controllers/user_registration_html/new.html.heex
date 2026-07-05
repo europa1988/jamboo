@@ -1,28 +1,10 @@
 <h1 class="text-2xl font-bold mb-6">Регистрация</h1>
 
-<%= form_for @changeset, ~p"/users/register", fn f -> %>
-  <div class="mb-4">
-    <%= label f, :email, "Email",
-      class: "block text-sm font-medium text-gray-700 dark:text-gray-300" %>
-    <%= email_input f, :email,
-      class: "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-800 dark:text-white" %>
+<.form for={@form} action={~p"/users/register"}>
+  <.input field={@form[:email]} type="email" label="Email" required />
+  <.input field={@form[:password]} type="password" label="Пароль" required />
 
-    <%= for {msg, _opts} <- Keyword.get_values(f.errors, :email) do %>
-      <p class="text-red-500 text-sm mt-1"><%= msg %></p>
-    <% end %>
+  <div class="mt-4">
+    <.button type="submit" variant="primary">Зарегистрироваться</.button>
   </div>
-
-  <div class="mb-6">
-    <%= label f, :password, "Пароль",
-      class: "block text-sm font-medium text-gray-700 dark:text-gray-300" %>
-    <%= password_input f, :password,
-      class: "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 dark:bg-gray-800 dark:text-white" %>
-
-    <%= for {msg, _opts} <- Keyword.get_values(f.errors, :password) do %>
-      <p class="text-red-500 text-sm mt-1"><%= msg %></p>
-    <% end %>
-  </div>
-
-  <%= submit "Зарегистрироваться",
-    class: "bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" %>
-<% end %>
+</.form>

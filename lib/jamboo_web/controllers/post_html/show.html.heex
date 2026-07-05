@@ -1,33 +1,42 @@
 <article class="bg-white rounded-global shadow-sm p-6 dark:bg-dark-card">
   <div class="flex items-center gap-2 text-xs text-jamboo-dark-gray mb-4">
-    <img src="https://i.pravatar.cc/30?img=3" alt="Автор" class="w-8 h-8 rounded-full">
+    <img src="https://i.pravatar.cc/30?img=3" alt="Автор" class="w-8 h-8 rounded-full" />
     <div>
       <span class="font-bold text-black dark:text-dark-text">r/сообщество</span>
-      <span>Автор: <%= @post.author_nickname %></span>
+      <span>Автор: {@post.author_nickname}</span>
       <span>5 часов назад</span>
     </div>
     <div class="ml-auto flex gap-2">
       <%= if @post.author_nickname == "admin" do %>
-        <a href={~p"/posts/#{@post.id}/edit"} class="text-sm text-jamboo-blue hover:underline">Редактировать</a>
-        <.link href={~p"/posts/#{@post.id}"} method="delete" data-confirm="Удалить?" class="text-sm text-red-600 hover:underline">Удалить</.link>
+        <a href={~p"/posts/#{@post.id}/edit"} class="text-sm text-jamboo-blue hover:underline">
+          Редактировать
+        </a>
+        <.link
+          href={~p"/posts/#{@post.id}"}
+          method="delete"
+          data-confirm="Удалить?"
+          class="text-sm text-red-600 hover:underline"
+        >
+          Удалить
+        </.link>
       <% end %>
     </div>
   </div>
-  <h1 class="text-2xl font-bold mb-4 dark:text-dark-text"><%= @post.title %></h1>
-  <div class="prose dark:text-dark-text"><%= @post.body %></div>
+  <h1 class="text-2xl font-bold mb-4 dark:text-dark-text">{@post.title}</h1>
+  <div class="prose dark:text-dark-text">{@post.body}</div>
   <div class="flex items-center gap-4 mt-6">
     <div class="voting-container dark:bg-gray-800">
-      <%= render_post_vote(@post) %>
+      <.post_vote post={@post} />
     </div>
     <div class="flex gap-3">
       <button class="flex items-center gap-1 text-sm text-jamboo-dark-gray px-3 py-1 rounded-small hover:bg-jamboo-light-gray transition dark:text-gray-400 dark:hover:bg-gray-700">
-        <span class="material-icons text-base">chat_bubble</span> <%= length(@comments) %> Комментариев
+        <.icon name="hero-chat-bubble-left-right" class="size-4" /> {length(@comments)} Комментариев
       </button>
       <button class="flex items-center gap-1 text-sm text-jamboo-dark-gray px-3 py-1 rounded-small hover:bg-jamboo-light-gray transition dark:text-gray-400 dark:hover:bg-gray-700">
-        <span class="material-icons text-base">share</span> Поделиться
+        <.icon name="hero-share" class="size-4" /> Поделиться
       </button>
       <button class="flex items-center gap-1 text-sm text-jamboo-dark-gray px-3 py-1 rounded-small hover:bg-jamboo-light-gray transition dark:text-gray-400 dark:hover:bg-gray-700">
-        <span class="material-icons text-base">bookmark</span> Сохранить
+        <.icon name="hero-bookmark" class="size-4" /> Сохранить
       </button>
     </div>
   </div>
@@ -35,8 +44,8 @@
 
 <!-- Комментарии -->
 <div class="mt-6">
-  <h2 class="text-xl font-bold mb-4 dark:text-dark-text">Комментарии (<%= length(@comments) %>)</h2>
-  
+  <h2 class="text-xl font-bold mb-4 dark:text-dark-text">Комментарии ({length(@comments)})</h2>
+
   <%= if @comments == [] do %>
     <p class="text-gray-500 dark:text-gray-400">Пока нет комментариев. Будьте первым!</p>
   <% else %>
@@ -44,13 +53,13 @@
       <%= for comment <- @comments do %>
         <div class="bg-white rounded-global shadow-sm p-4 dark:bg-dark-card">
           <div class="flex items-start gap-3">
-            <img src="https://i.pravatar.cc/30?img=3" alt="Аватар" class="w-8 h-8 rounded-full">
+            <img src="https://i.pravatar.cc/30?img=3" alt="Аватар" class="w-8 h-8 rounded-full" />
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1">
-                <span class="font-bold text-sm dark:text-dark-text"><%= comment.author_nickname %></span>
+                <span class="font-bold text-sm dark:text-dark-text">{comment.author_nickname}</span>
                 <span class="text-xs text-gray-500 dark:text-gray-400">только что</span>
               </div>
-              <p class="text-gray-700 dark:text-gray-300"><%= comment.body %></p>
+              <p class="text-gray-700 dark:text-gray-300">{comment.body}</p>
             </div>
           </div>
         </div>
@@ -61,10 +70,16 @@
   <!-- Форма добавления комментария -->
   <div class="bg-white rounded-global shadow-sm p-4 mt-4 dark:bg-dark-card">
     <h3 class="font-bold mb-3 dark:text-dark-text">Оставить комментарий</h3>
-    <form action={~p"/posts/#{@post.id}/comments"} method="post">
-      <input type="hidden" name="comment[author_nickname]" value="Гость">
-      <textarea name="comment[body]" rows="3" class="w-full p-3 bg-jamboo-light-gray border border-jamboo-border rounded-element focus:outline-none focus:ring-2 focus:ring-jamboo-blue transition text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Напишите комментарий..." required></textarea>
-      <button type="submit" class="mt-3 px-4 py-2 bg-jamboo-orange text-white rounded-button hover:opacity-90 transition font-medium">Отправить</button>
-    </form>
+    <.form for={@comment_form} action={~p"/posts/#{@post.id}/comments"}>
+      <.input field={@comment_form[:author_nickname]} type="hidden" value="Гость" />
+      <.input
+        field={@comment_form[:body]}
+        type="textarea"
+        rows="3"
+        placeholder="Напишите комментарий..."
+        required
+      />
+      <.button type="submit" class="mt-3">Отправить</.button>
+    </.form>
   </div>
 </div>
