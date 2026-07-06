@@ -33,13 +33,10 @@ defmodule Jamboo.Content do
   def downvote(id), do: change_vote(id, -1)
 
   defp change_vote(id, delta) do
-    # Преобразуем id в целое число (на случай, если пришла строка)
-    int_id = String.to_integer("#{id}")
-
     {1, _} =
-      from(p in Post, where: p.id == ^int_id)
+      from(p in Post, where: p.id == ^id)
       |> Repo.update_all(inc: [vote_score: delta])
 
-    {:ok, Repo.get!(Post, int_id)}
+    {:ok, get_post!(id)}
   end
 end
