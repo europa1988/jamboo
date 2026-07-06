@@ -7,7 +7,7 @@ defmodule Jamboo.Content.Post do
     field :body, :string
     field :vote_score, :integer, default: 0
     field :author_nickname, :string
-    field :is_microblog, :boolean, default: false
+    field :microblog, :boolean, default: false, source: :is_microblog
     field :tags, :string
 
     timestamps()
@@ -16,7 +16,7 @@ defmodule Jamboo.Content.Post do
   @doc false
   def changeset(post, attrs) do
     post
-    |> cast(attrs, [:title, :body, :author_nickname, :is_microblog, :tags])
+    |> cast(attrs, [:title, :body, :author_nickname, :microblog, :tags])
     |> validate_required([:title, :body, :author_nickname],
       message: "не может быть пустым"
     )
