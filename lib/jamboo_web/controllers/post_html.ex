@@ -4,36 +4,40 @@ defmodule JambooWeb.PostHTML do
 
   embed_templates "post_html/*"
 
-  @doc """
-  Возвращает HTML‑фрагмент блока голосования для поста.
+  def render("post_vote.html", assigns) do
+    post_vote(assigns)
+  end
 
-  Используется в HTMX‑ответах, поэтому возвращает строку, а не HEEx‑шаблон.
+  @doc """
+  Renders the vote block for a post.
   """
-  def render_post_vote(post) do
-    """
+  attr :post, Jamboo.Content.Post, required: true
+
+  def post_vote(assigns) do
+    ~H"""
     <div class="flex flex-col items-center space-y-1 vote-container">
-      <button 
-        hx-put="/posts/#{post.id}/upvote"
+      <button
+        hx-put={~p"/posts/#{@post.id}/upvote"}
         hx-target="closest .vote-container"
         hx-swap="outerHTML"
         class="p-2 hover:bg-gray-100 rounded-full transition-colors"
         title="Повысить рейтинг"
       >
-        <span class="material-icons text-gray-600 hover:text-orange-500">arrow_upward</span>
+        <.icon name="hero-arrow-up" class="size-6 text-gray-600 hover:text-orange-500" />
       </button>
 
-      <span class="font-bold text-lg #{if post.vote_score > 0, do: "text-orange-500", else: "text-gray-700"}">
-        #{post.vote_score}
+      <span class={["font-bold text-lg", if(@post.vote_score > 0, do: "text-orange-500", else: "text-gray-700")]}>
+        {@post.vote_score}
       </span>
 
-      <button 
-        hx-put="/posts/#{post.id}/downvote"
+      <button
+        hx-put={~p"/posts/#{@post.id}/downvote"}
         hx-target="closest .vote-container"
         hx-swap="outerHTML"
         class="p-2 hover:bg-gray-100 rounded-full transition-colors"
         title="Понизить рейтинг"
       >
-        <span class="material-icons text-gray-600 hover:text-blue-500">arrow_downward</span>
+        <.icon name="hero-arrow-down" class="size-6 text-gray-600 hover:text-blue-500" />
       </button>
     </div>
     """
