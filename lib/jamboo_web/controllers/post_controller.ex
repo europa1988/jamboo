@@ -12,7 +12,8 @@ defmodule JambooWeb.PostController do
   def show(conn, %{"id" => id}) do
     post = Content.get_post!(id)
     comments = Comments.list_comments_for_post(post.id)
-    render(conn, :show, post: post, comments: comments)
+    comment_form = to_form(Ecto.Changeset.change(%Jamboo.Comments.Comment{}), as: :comment)
+    render(conn, :show, post: post, comments: comments, comment_form: comment_form)
   end
 
   def new(conn, _params) do
@@ -60,17 +61,17 @@ defmodule JambooWeb.PostController do
   # HTMX голосование
   def upvote(conn, %{"id" => id}) do
     {:ok, post} = Content.upvote(id)
-    html = JambooWeb.PostHTML.render_post_vote(post)
+
     conn
-    |> put_resp_header("content-type", "text/html; charset=utf-8")
-    |> send_resp(200, html)
+    |> put_layout(false)
+    |> render("post_vote.html", post: post)
   end
 
   def downvote(conn, %{"id" => id}) do
     {:ok, post} = Content.downvote(id)
-    html = JambooWeb.PostHTML.render_post_vote(post)
+
     conn
-    |> put_resp_header("content-type", "text/html; charset=utf-8")
-    |> send_resp(200, html)
+    |> put_layout(false)
+    |> render("post_vote.html", post: post)
   end
 end

@@ -1,0 +1,42 @@
+<header class="bg-white dark:bg-gray-800 shadow">
+  <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+    <a href={~p"/"} class="flex items-center gap-2">
+      <.icon name="hero-chat-bubble-left-right" class="text-jamboo-orange w-6 h-6" />
+      <span class="text-xl font-bold text-jamboo-orange">Jamboo</span>
+    </a>
+
+    <nav class="flex items-center gap-4 text-sm">
+      <a href={~p"/"} class="hover:underline">Лента</a>
+
+      <%= if assigns[:current_scope] do %>
+        <span class="text-gray-500 dark:text-gray-300">
+          {@current_scope.email}
+        </span>
+        <.link href={~p"/users/settings"} class="hover:underline">
+          Настройки
+        </.link>
+        <.link href={~p"/users/log-out"} method="delete" class="text-red-500 hover:underline">
+          Выйти
+        </.link>
+      <% else %>
+        <.link href={~p"/users/register"} class="hover:underline">
+          Регистрация
+        </.link>
+        <.link href={~p"/users/log-in"} class="hover:underline">
+          Вход
+        </.link>
+      <% end %>
+    </nav>
+  </div>
+</header>
+
+<main class="container mx-auto px-4 py-6">
+  <.flash_group flash={@flash} />
+  {@inner_content}
+</main>
+
+<footer class="bg-white dark:bg-gray-800 border-t border-jamboo-border dark:border-dark-border mt-8">
+  <div class="container mx-auto px-4 py-4 text-center text-xs text-gray-500 dark:text-gray-400">
+    © 2023 Jamboo
+  </div>
+</footer>

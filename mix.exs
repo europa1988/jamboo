@@ -73,7 +73,8 @@ defmodule Jamboo.MixProject do
        test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
        "assets.setup": ["tailwind.install --if-missing"],
        "assets.build": ["tailwind default"],
-       "assets.deploy": ["tailwind default --minify", "phx.digest"]
+       "assets.deploy": ["tailwind default --minify", "phx.digest"],
+       precommit: ["format --check-formatted", "test", "compile --warnings-as-errors"]
      ]
    end
 end
