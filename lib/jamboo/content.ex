@@ -2,9 +2,20 @@ defmodule Jamboo.Content do
   import Ecto.Query, warn: false
   alias Jamboo.Repo
   alias Jamboo.Content.Post
+  alias Jamboo.Comments.Comment
 
   def list_posts do
-    Repo.all(from p in Post, order_by: [desc: p.inserted_at])
+    query =
+      from p in Post,
+        left_join: c in Comment, on: c.post_id == p.id,
+        group_by: p.id,
+        select: {p, count(c.id)},
+        order_by: [desc: p.inserted_at]
+
+    Repo.all(query)
+    |> Enum.map(fn {post, count} ->
+      Map.put(post, :comments_count, count)
+    end)
   end
 
   def get_post!(id), do: Repo.get!(Post, id)
@@ -33,13 +44,10 @@ defmodule Jamboo.Content do
   def downvote(id), do: change_vote(id, -1)
 
   defp change_vote(id, delta) do
-    # Преобразуем id в целое число (на случай, если пришла строка)
-    int_id = String.to_integer("#{id}")
-
     {1, _} =
-      from(p in Post, where: p.id == ^int_id)
+      from(p in Post, where: p.id == ^id)
       |> Repo.update_all(inc: [vote_score: delta])
 
-    {:ok, Repo.get!(Post, int_id)}
+    {:ok, Repo.get!(Post, id)}
   end
 end
