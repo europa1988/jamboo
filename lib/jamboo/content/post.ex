@@ -9,6 +9,7 @@ defmodule Jamboo.Content.Post do
     field :author_nickname, :string
     field :is_microblog, :boolean, default: false
     field :tags, :string
+    field :comments_count, :integer, virtual: true
 
     timestamps()
   end

@@ -3,30 +3,34 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="csrf-token" content={get_csrf_token()} />
   <title>Jamboo</title>
 
   <!-- Подключение собранных стилей Tailwind -->
   <link rel="stylesheet" href={~p"/assets/app.css"} />
 
   <!-- Подключение HTMX: локальный файл + fallback на CDN -->
-  <%= raw(JambooWeb.LayoutHelpers.htmx_script_tag(@conn)) %>
+  {JambooWeb.LayoutHelpers.htmx_script_tag(@conn)}
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<body
+  class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+  hx-headers={Jason.encode!(%{"X-CSRF-Token" => get_csrf_token()})}
+>
 
   <!-- Верхняя панель навигации -->
   <header class="bg-white dark:bg-gray-800 shadow">
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-      <a href={~p"/"} class="flex items-center gap-2">
-        <span class="material-icons text-jamboo-orange">forum</span>
+      <.link href={~p"/"} class="flex items-center gap-2">
+        <.icon name="hero-chat-bubble-left-right-solid" class="size-6 text-jamboo-orange" />
         <span class="text-xl font-bold text-jamboo-orange">Jamboo</span>
-      </a>
+      </.link>
 
       <nav class="flex items-center gap-4 text-sm">
-        <a href={~p"/"} class="hover:underline">Лента</a>
+        <.link href={~p"/"} class="hover:underline">Лента</.link>
 
-        <%= if @current_scope do %>
+        <%= if assigns[:current_scope] do %>
           <span class="text-gray-500 dark:text-gray-300">
-            <%= @current_scope.email %>
+            {@current_scope.email}
           </span>
           <.link href={~p"/users/settings"} class="hover:underline">
             Настройки
@@ -48,7 +52,7 @@
 
   <!-- Основной контент -->
   <main class="container mx-auto px-4 py-6">
-    <%= @inner_content %>
+    {@inner_content}
   </main>
 
   <!-- Футер -->
