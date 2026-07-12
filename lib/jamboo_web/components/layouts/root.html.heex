@@ -9,7 +9,7 @@
   <link rel="stylesheet" href={~p"/assets/app.css"} />
 
   <!-- Подключение HTMX: локальный файл + fallback на CDN -->
-  <%= raw(JambooWeb.LayoutHelpers.htmx_script_tag(@conn)) %>
+  {raw(JambooWeb.LayoutHelpers.htmx_script_tag(@conn))}
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 

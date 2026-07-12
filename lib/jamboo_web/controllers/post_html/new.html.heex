@@ -1,25 +1,14 @@
 <div class="bg-white rounded-global shadow-sm p-6 mb-4 dark:bg-dark-card">
   <h1 class="text-2xl font-bold mb-6 dark:text-dark-text">Создать пост</h1>
   
-  <.form :let={f} for={@changeset} action={~p"/posts"} method="post">
-    <div class="mb-6">
-      <label class="block text-gray-700 font-medium mb-2 dark:text-gray-300">Заголовок</label>
-      <input type="text" name="post[title]" value={f[:title].value} class="w-full py-3 px-4 bg-jamboo-light-gray border border-jamboo-border rounded-element focus:outline-none focus:ring-2 focus:ring-jamboo-blue transition text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Придумайте заголовок"/>
-      <p class="text-red-500 text-xs mt-1"><%= f[:title].errors |> Enum.map(&elem(&1, 0)) |> Enum.join(", ") %></p>
-    </div>
-    <div class="mb-6">
-      <label class="block text-gray-700 font-medium mb-2 dark:text-gray-300">Текст поста</label>
-      <textarea name="post[body]" rows="8" class="w-full py-3 px-4 bg-jamboo-light-gray border border-jamboo-border rounded-element focus:outline-none focus:ring-2 focus:ring-jamboo-blue transition text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Напишите что-нибудь..."><%= f[:body].value %></textarea>
-      <p class="text-red-500 text-xs mt-1"><%= f[:body].errors |> Enum.map(&elem(&1, 0)) |> Enum.join(", ") %></p>
-    </div>
-    <div class="mb-6">
-      <label class="block text-gray-700 font-medium mb-2 dark:text-gray-300">Ваш ник</label>
-      <input type="text" name="post[author_nickname]" value={f[:author_nickname].value} class="w-full py-3 px-4 bg-jamboo-light-gray border border-jamboo-border rounded-element focus:outline-none focus:ring-2 focus:ring-jamboo-blue transition text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Как вас зовут?"/>
-      <p class="text-red-500 text-xs mt-1"><%= f[:author_nickname].errors |> Enum.map(&elem(&1, 0)) |> Enum.join(", ") %></p>
-    </div>
+  <.form for={@form} action={~p"/posts"} method="post">
+    <.input field={@form[:title]} label="Заголовок" placeholder="Придумайте заголовок" />
+    <.input field={@form[:body]} type="textarea" label="Текст поста" rows="8" placeholder="Напишите что-нибудь..." />
+    <.input field={@form[:author_nickname]} label="Ваш ник" placeholder="Как вас зовут?" />
+
     <div class="flex justify-end gap-3">
-      <button type="button" class="px-6 py-2 border border-jamboo-border rounded-button text-gray-700 hover:bg-gray-100 transition dark:text-gray-300 dark:hover:bg-gray-700">Сохранить черновик</button>
-      <button type="submit" class="px-6 py-2 bg-jamboo-orange text-white rounded-button hover:opacity-90 transition font-medium">Опубликовать</button>
+      <.button type="button" variant="outline">Сохранить черновик</.button>
+      <.button type="submit">Опубликовать</.button>
     </div>
   </.form>
 </div>
