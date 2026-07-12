@@ -12,12 +12,13 @@ defmodule JambooWeb.PostController do
   def show(conn, %{"id" => id}) do
     post = Content.get_post!(id)
     comments = Comments.list_comments_for_post(post.id)
-    render(conn, :show, post: post, comments: comments)
+    comment_form = to_form(Ecto.Changeset.change(%Jamboo.Comments.Comment{}), as: :comment)
+    render(conn, :show, post: post, comments: comments, comment_form: comment_form)
   end
 
   def new(conn, _params) do
     changeset = Content.change_post(%Post{})
-    render(conn, :new, changeset: changeset)
+    render(conn, :new, form: to_form(changeset))
   end
 
   def create(conn, %{"post" => post_params}) do
@@ -26,32 +27,36 @@ defmodule JambooWeb.PostController do
         conn
         |> put_flash(:info, "Пост создан!")
         |> redirect(to: ~p"/posts/#{post}")
+
       {:error, changeset} ->
-        render(conn, :new, changeset: changeset)
+        render(conn, :new, form: to_form(changeset))
     end
   end
 
   def edit(conn, %{"id" => id}) do
     post = Content.get_post!(id)
     changeset = Content.change_post(post)
-    render(conn, :edit, post: post, changeset: changeset)
+    render(conn, :edit, post: post, form: to_form(changeset))
   end
 
   def update(conn, %{"id" => id, "post" => post_params}) do
     post = Content.get_post!(id)
+
     case Content.update_post(post, post_params) do
       {:ok, post} ->
         conn
         |> put_flash(:info, "Пост обновлён!")
         |> redirect(to: ~p"/posts/#{post}")
+
       {:error, changeset} ->
-        render(conn, :edit, post: post, changeset: changeset)
+        render(conn, :edit, post: post, form: to_form(changeset))
     end
   end
 
   def delete(conn, %{"id" => id}) do
     post = Content.get_post!(id)
     {:ok, _} = Content.delete_post(post)
+
     conn
     |> put_flash(:info, "Пост удалён!")
     |> redirect(to: ~p"/")
@@ -60,17 +65,17 @@ defmodule JambooWeb.PostController do
   # HTMX голосование
   def upvote(conn, %{"id" => id}) do
     {:ok, post} = Content.upvote(id)
-    html = JambooWeb.PostHTML.render_post_vote(post)
+
     conn
-    |> put_resp_header("content-type", "text/html; charset=utf-8")
-    |> send_resp(200, html)
+    |> put_layout(false)
+    |> render(:post_vote, post: post)
   end
 
   def downvote(conn, %{"id" => id}) do
     {:ok, post} = Content.downvote(id)
-    html = JambooWeb.PostHTML.render_post_vote(post)
+
     conn
-    |> put_resp_header("content-type", "text/html; charset=utf-8")
-    |> send_resp(200, html)
+    |> put_layout(false)
+    |> render(:post_vote, post: post)
   end
 end
