@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Участники c/{{ community.name }} — Jamboo{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-4">
+        <div class="flex items-center space-x-3 mb-6">
+            <a href="{% url 'communities:detail' community.slug %}" class="text-gray-500 hover:text-gray-700">
+                ← Назад
+            </a>
+            <h1 class="text-xl font-bold text-gray-900">Участники c/{{ community.name }}</h1>
+        </div>
+        
+        <div class="space-y-3">
+            {% for member in members %}
+            <div class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-orange-200 rounded-full flex items-center justify-center text-orange-700 font-bold">
+                        {% if member.user.profile.avatar %}
+                        <img src="{{ member.user.profile.avatar.url }}" class="w-full h-full rounded-full object-cover">
+                        {% else %}
+                        {{ member.user.username|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <a href="{% url 'users:profile' member.user.username %}" class="font-medium text-gray-900 hover:underline">
+                            u/{{ member.user.username }}
+                        </a>
+                        <p class="text-xs text-gray-500">
+                            {% if member.role == 'admin' %}
+                            <span class="text-orange-600 font-medium">Администратор</span>
+                            {% elif member.role == 'moderator' %}
+                            <span class="text-blue-600 font-medium">Модератор</span>
+                            {% else %}
+                            Участник
+                            {% endif %}
+                            • {{ member.joined_at|timesince }} назад
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center text-gray-500 py-8">Пока нет участников</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

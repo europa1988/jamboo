@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Уведомления — Jamboo{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">Уведомления</h1>
+            
+            {% if unread_count > 0 %}
+            <button 
+                hx-post="{% url 'notifications:mark_all_read' %}"
+                hx-target="#notification-badge"
+                hx-swap="outerHTML"
+                class="text-sm text-orange-600 hover:text-orange-700 font-medium"
+            >
+                Пометить все как прочитанные
+            </button>
+            {% endif %}
+        </div>
+        
+        {% if notifications %}
+        <div class="space-y-2" id="notifications-list">
+            {% for notification in notifications %}
+                {% include 'notifications/partials/notification_item.html' %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12 text-gray-500">
+            <p class="text-lg mb-2">Уведомлений пока нет</p>
+            <p class="text-sm">Здесь появятся ответы на ваши посты, голоса и подписки</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

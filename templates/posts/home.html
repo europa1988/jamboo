@@ -1,0 +1,450 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Jamboo — Главная{% endblock %}
+
+{% block extra_head %}
+<!-- Swiper CSS -->
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+<style>
+    /* Скрываем стандартные стрелки Swiper */
+    .swiper-button-prev::after, .swiper-button-next::after { display: none !important; }
+
+    /* Кастомные стили */
+    .text-balance { text-wrap: balance; }
+
+    /* Голосование */
+    .voting-container {
+        width: 50px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px 0;
+        border-radius: 16px 0 0 16px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        box-shadow: inset 2px 0 4px rgba(0,0,0,0.05), 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+    .vote-btn {
+        width: 36px; height: 36px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; background: transparent; border: none;
+        cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        color: #94a3b8;
+        position: relative; overflow: hidden;
+    }
+    .vote-btn:hover { transform: scale(1.1); color: #64748b; }
+    .vote-btn.up:hover { color: #ff6b35; }
+    .vote-btn.down:hover { color: #0079d3; }
+    .vote-btn.active { color: white; }
+    .vote-btn.up.active { background: #ff6b35; box-shadow: 0 4px 8px rgba(255,107,53,0.3); }
+    .vote-btn.down.active { background: #0079d3; box-shadow: 0 4px 8px rgba(0,121,211,0.3); }
+    .vote-count {
+        font-size: 15px; font-weight: 700; margin: 8px 0; padding: 4px 8px;
+        border-radius: 12px; background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        min-width: 40px; text-align: center; color: #334155;
+    }
+    .vote-count.positive { color: #ff6b35; }
+    .vote-count.negative { color: #0079d3; }
+
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    .vote-count.changed { animation: pulse 0.4s ease; }
+
+    /* Карусель */
+    .news-swiper { width: 100%; height: 200px; position: relative; margin-bottom: 20px; border-radius: 16px; overflow: hidden; }
+    .news-swiper .swiper-wrapper { display: flex; width: 100%; height: 100%; align-items: stretch; }
+    .news-swiper .swiper-slide { border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.3s ease; opacity: 0.9; }
+    .news-swiper .swiper-slide:hover { transform: scale(1.02); opacity: 1; }
+    .news-swiper .carousel-item { position: relative; height: 100%; }
+    .news-swiper .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
+    .news-swiper .carousel-title {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+        color: white; padding: 20px 10px 10px 10px; font-size: 16px; font-weight: 600;
+    }
+    .news-swiper .swiper-button-prev,
+    .news-swiper .swiper-button-next {
+        width: 36px; height: 36px;
+        background: rgba(255,255,255,0.9);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        position: absolute; top: 50%; transform: translateY(-50%);
+        z-index: 10; cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        color: #1a5f9e;
+    }
+    .news-swiper .swiper-button-prev { left: 15px; }
+    .news-swiper .swiper-button-next { right: 15px; }
+
+    /* Скроллбар */
+    .scrollbar-hidden::-webkit-scrollbar { display: none; }
+    .scrollbar-hidden { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Категории */
+    .category-item { transition: all 0.3s ease; }
+    .category-item:hover { background-color: #f0f0f0; transform: translateX(5px); }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Основной контент -->
+<div class="flex flex-1 max-w-7xl mx-auto w-full px-3 py-5 gap-5">
+    <!-- Левая колонка -->
+    <div id="leftSidebar" class="hidden md:block w-64 bg-white rounded-global shadow-sm sticky top-20 h-[calc(100vh-100px)] overflow-y-auto scrollbar-hidden">
+        <h3 class="font-bold text-base py-3 px-4 border-b border-jamboo-border">КАТЕГОРИИ</h3>
+        <div class="py-2">
+            <div class="flex items-center justify-between px-4 py-2 cursor-pointer group accordion-header">
+                <h4 class="font-medium text-gray-700">О проекте</h4>
+                <span class="material-icons text-gray-500 group-hover:text-jamboo-orange transition">expand_more</span>
+            </div>
+            <div class="accordion-content">
+                <div class="pl-6 pr-4 mt-1">
+                    <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                        <span class="material-icons text-sm text-gray-500 mr-2">work</span>Вакансии
+                    </a>
+                    <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                        <span class="material-icons text-sm text-gray-500 mr-2">article</span>Пресса
+                    </a>
+                    <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                        <span class="material-icons text-sm text-gray-500 mr-2">campaign</span>Реклама
+                    </a>
+                    <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                        <span class="material-icons text-sm text-gray-500 mr-2">article</span>Блог
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="py-2">
+            <div class="flex items-center justify-between px-4 py-2 cursor-pointer group accordion-header">
+                <h4 class="font-medium text-gray-700">Сообщества</h4>
+                <span class="material-icons text-gray-500 group-hover:text-jamboo-orange transition">expand_more</span>
+            </div>
+            <div class="accordion-content">
+                <div class="pl-6 pr-4 mt-1">
+                    <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                        <span class="material-icons text-sm text-gray-500 mr-2">palette</span>Искусство
+                    </a>
+                    <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                        <span class="material-icons text-sm text-gray-500 mr-2">sports_esports</span>Игры
+                    </a>
+                    <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                        <span class="material-icons text-sm text-gray-500 mr-2">sports_soccer</span>Спорт
+                    </a>
+                    <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                        <span class="material-icons text-sm text-gray-500 mr-2">music_note</span>Музыка
+                    </a>
+                    <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                        <span class="material-icons text-sm text-gray-500 mr-2">science</span>Наука
+                    </a>
+                </div>
+            </div>
+        </div>
+        <h3 class="font-bold text-base py-3 px-4 border-b border-jamboo-border mt-4">ПОПУЛЯРНЫЕ СООБЩЕСТВА</h3>
+        <ul class="py-2">
+            {% for community in popular_communities %}
+            <li>
+                <a href="#" class="flex items-center px-4 py-2 hover:bg-jamboo-light-gray rounded-small transition">
+                    {% if community.avatar %}
+                    <img src="{{ community.avatar.url }}" class="w-7 h-7 rounded-small object-cover mr-2">
+                    {% else %}
+                    <div class="w-7 h-7 rounded-small bg-orange-200 flex items-center justify-center text-orange-700 text-xs font-bold mr-2">
+                        {{ community.name|first|upper }}
+                    </div>
+                    {% endif %}
+                    <span class="text-sm font-medium">c/{{ community.name }}</span>
+                </a>
+            </li>
+            {% empty %}
+            <li class="px-4 py-2 text-sm text-gray-500">Пока нет сообществ</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Центральная колонка -->
+    <div class="flex-1 min-w-0">
+        <!-- Фильтры -->
+        <div class="bg-white rounded-global shadow-sm px-3 py-2 mb-4 flex gap-3 overflow-x-auto scrollbar-hidden">
+            <button class="flex items-center gap-2 px-4 py-2 bg-jamboo-light-gray text-jamboo-orange rounded-small font-medium whitespace-nowrap">
+                <span class="material-icons">local_fire_department</span> Популярные
+            </button>
+            <button class="flex items-center gap-2 px-4 py-2 text-jamboo-dark-gray rounded-small font-medium hover:bg-jamboo-light-gray whitespace-nowrap transition">
+                <span class="material-icons">leaderboard</span> Лучшие
+            </button>
+            <button class="flex items-center gap-2 px-4 py-2 text-jamboo-dark-gray rounded-small font-medium hover:bg-jamboo-light-gray whitespace-nowrap transition">
+                <span class="material-icons">new_releases</span> Новые
+            </button>
+            <button class="flex items-center gap-2 px-4 py-2 text-jamboo-dark-gray rounded-small font-medium hover:bg-jamboo-light-gray whitespace-nowrap transition">
+                <span class="material-icons">trending_up</span> Набирающие
+            </button>
+        </div>
+
+        <!-- Карусель Swiper -->
+        <div class="news-swiper swiper mb-6 relative rounded-global shadow-md">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800" alt="AI">
+                        <div class="carousel-title">Новый прорыв в искусственном интеллекте</div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800" alt="Горы">
+                        <div class="carousel-title">Уникальные природные явления в горах Алтая</div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800" alt="Наука">
+                        <div class="carousel-title">Открытие в квантовой физике</div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=800" alt="Техника">
+                        <div class="carousel-title">Новые гаджеты 2025 года</div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=800" alt="Космос">
+                        <div class="carousel-title">Новая миссия по изучению Марса</div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="carousel-item">
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800" alt="Природа">
+                        <div class="carousel-title">Технологии для очистки океанов</div>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-button-prev"><span class="material-icons">arrow_back</span></div>
+            <div class="swiper-button-next"><span class="material-icons">arrow_forward</span></div>
+        </div>
+
+        <!-- Лента постов (ДИНАМИЧЕСКАЯ) -->
+        <div class="space-y-4">
+            {% for post in posts %}
+            <div class="bg-white rounded-global shadow-sm flex">
+                <!-- Голосование -->
+                <div class="voting-container">
+                    <button class="vote-btn up" title="Апвоут">
+                        <span class="material-icons">arrow_upward</span>
+                    </button>
+                    <div class="vote-count {% if post.score > 0 %}positive{% elif post.score < 0 %}negative{% endif %}">
+                        {% if post.score >= 1000 %}{{ post.score|divisibleby:100 }}{% else %}{{ post.score }}{% endif %}
+                    </div>
+                    <button class="vote-btn down" title="Даунвоут">
+                        <span class="material-icons">arrow_downward</span>
+                    </button>
+                </div>
+                <div class="p-4 flex-1">
+                    <div class="flex items-center gap-2 text-xs text-jamboo-dark-gray flex-wrap">
+                        {% if post.community.avatar %}
+                        <img src="{{ post.community.avatar.url }}" alt="" class="w-5 h-5 rounded-full object-cover">
+                        {% else %}
+                        <div class="w-5 h-5 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 text-[10px] font-bold">
+                            {{ post.community.name|first|upper }}
+                        </div>
+                        {% endif %}
+                        <a href="#" class="font-bold text-black hover:text-jamboo-orange transition">c/{{ post.community.name }}</a>
+                        <span>Автор: {{ post.author.username }}</span>
+                        <span>{{ post.created_at|timesince }} назад</span>
+
+                        {% if post.is_nsfw %}
+                        <span class="bg-red-100 text-red-600 px-1.5 py-0.5 rounded text-[10px] font-bold">NSFW</span>
+                        {% endif %}
+                        {% if post.is_spoiler %}
+                        <span class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[10px] font-bold">СПОЙЛЕР</span>
+                        {% endif %}
+                    </div>
+
+                    <h3 class="text-lg font-semibold my-2 hover:text-jamboo-orange transition cursor-pointer">{{ post.title }}</h3>
+
+                    {% if post.post_type == 'text' and post.content %}
+                    <p class="text-gray-700 mb-3 text-balance line-clamp-3">{{ post.content|truncatewords:50 }}</p>
+                    {% elif post.post_type == 'link' and post.url %}
+                    <a href="{{ post.url }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline mb-3">
+                        <span class="material-icons text-sm">link</span>
+                        {{ post.url|truncatechars:60 }}
+                    </a>
+                    {% elif post.post_type == 'image' and post.image %}
+                    <div class="my-3 rounded-small overflow-hidden">
+                        <img src="{{ post.image.url }}" alt="{{ post.title }}" class="w-full h-64 object-cover">
+                    </div>
+                    {% endif %}
+
+                    <div class="flex gap-3 flex-wrap">
+                        <a href="#" class="flex items-center gap-1 text-sm text-jamboo-dark-gray px-3 py-1 rounded-small hover:bg-jamboo-light-gray transition">
+                            <span class="material-icons text-base">chat_bubble</span>
+                            {{ post.comment_count }} Комментариев
+                        </a>
+                        <button class="flex items-center gap-1 text-sm text-jamboo-dark-gray px-3 py-1 rounded-small hover:bg-jamboo-light-gray transition">
+                            <span class="material-icons text-base">share</span>
+                            Поделиться
+                        </button>
+                        <button class="flex items-center gap-1 text-sm text-jamboo-dark-gray px-3 py-1 rounded-small hover:bg-jamboo-light-gray transition">
+                            <span class="material-icons text-base">bookmark</span>
+                            Сохранить
+                        </button>
+                        {% if user == post.author or user.is_staff %}
+                        <button class="flex items-center gap-1 text-sm text-red-500 px-3 py-1 rounded-small hover:bg-red-50 transition" onclick="return confirm('Удалить пост?')">
+                            <span class="material-icons text-base">delete</span>
+                            Удалить
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="bg-white rounded-global shadow-sm p-8 text-center">
+                <p class="text-lg text-gray-500 mb-2">Пока нет постов</p>
+                <p class="text-sm text-gray-400 mb-4">Будь первым, кто создаст пост!</p>
+                {% if user.is_authenticated %}
+                <a href="#" class="inline-block bg-jamboo-orange hover:opacity-90 text-white px-6 py-2 rounded-button text-sm font-medium transition">
+                    Создать пост
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if is_paginated %}
+        <div class="flex justify-center gap-2 mt-6">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-white rounded-global shadow-sm hover:shadow text-sm text-gray-600 transition">← Назад</a>
+            {% endif %}
+            <span class="px-4 py-2 bg-white rounded-global shadow-sm text-sm text-gray-600">
+                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+            </span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-white rounded-global shadow-sm hover:shadow text-sm text-gray-600 transition">Вперёд →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Правая колонка -->
+    <div class="hidden lg:block w-80 space-y-5 sticky top-20 h-[calc(100vh-100px)] overflow-y-auto scrollbar-hidden">
+        <div class="bg-white rounded-global shadow-sm overflow-hidden">
+            <div class="h-24 bg-gradient-to-r from-jamboo-orange to-yellow-500 relative rounded-t-global">
+                <img src="https://images.unsplash.com/photo-1557683316-973673baf926?w=800" alt="Популярное" class="w-full h-full object-cover">
+                <h3 class="absolute bottom-4 left-4 text-white font-bold text-lg">Jamboo</h3>
+            </div>
+            <div class="p-4">
+                <p class="text-gray-600 mb-4 text-balance">Лучшее место для обсуждения любых тем. Присоединяйтесь к сообществу.</p>
+                {% if user.is_authenticated %}
+                <a href="#" class="block w-full py-2 bg-gradient-to-r from-jamboo-orange to-yellow-500 text-white font-bold rounded-button hover:opacity-90 transition text-center text-sm">
+                    + Создать пост
+                </a>
+                {% else %}
+                <a href="#" class="block w-full py-2 bg-gradient-to-r from-jamboo-orange to-yellow-500 text-white font-bold rounded-button hover:opacity-90 transition text-center text-sm">
+                    Присоединиться
+                </a>
+                {% endif %}
+            </div>
+            <div class="p-4 border-t border-jamboo-border text-xs text-jamboo-dark-gray space-y-1">
+                <p>Создано 22 мая 2023</p>
+                <p>10.2м Участников</p>
+                <p>15.2к Онлайн</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-global shadow-sm p-4">
+            <h3 class="font-bold text-base mb-3 flex items-center gap-2">
+                <span class="material-icons text-jamboo-orange">trending_up</span>
+                Самые растущие сообщества сегодня
+            </h3>
+            {% for community in popular_communities|slice:":3" %}
+            <div class="flex items-center py-3 {% if not forloop.last %}border-b border-jamboo-border{% endif %}">
+                <span class="font-bold text-jamboo-orange w-6 text-center">{{ forloop.counter }}</span>
+                <a href="#" class="flex items-center ml-2 hover:opacity-80 transition">
+                    {% if community.avatar %}
+                    <img src="{{ community.avatar.url }}" class="w-6 h-6 rounded-small object-cover mr-2">
+                    {% else %}
+                    <div class="w-6 h-6 rounded-small bg-orange-200 flex items-center justify-center text-orange-700 text-xs font-bold mr-2">
+                        {{ community.name|first|upper }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <div class="font-bold text-sm">c/{{ community.name }}</div>
+                        <div class="text-xs text-jamboo-dark-gray">+{{ community.member_count }} участников сегодня</div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <p class="text-sm text-gray-500 py-4 text-center">Пока нет сообществ</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Swiper JS -->
+<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Swiper карусель
+        const swiperContainer = document.querySelector('.news-swiper');
+        if (swiperContainer && typeof Swiper !== 'undefined') {
+            const swiper = new Swiper('.news-swiper', {
+                loop: true,
+                slidesPerView: 1,
+                spaceBetween: 15,
+                autoplay: { delay: 5000, disableOnInteraction: false },
+                breakpoints: {
+                    640: { slidesPerView: 2, spaceBetween: 15 },
+                    1024: { slidesPerView: 3, spaceBetween: 20 }
+                }
+            });
+
+            // Кастомные кнопки
+            const prevBtn = document.querySelector('.news-swiper .swiper-button-prev');
+            const nextBtn = document.querySelector('.news-swiper .swiper-button-next');
+            if (prevBtn) prevBtn.addEventListener('click', () => swiper.slidePrev());
+            if (nextBtn) nextBtn.addEventListener('click', () => swiper.slideNext());
+
+            // Пауза при наведении
+            swiperContainer.addEventListener('mouseenter', () => swiper.autoplay.stop());
+            swiperContainer.addEventListener('mouseleave', () => swiper.autoplay.start());
+        }
+
+        // Голосование (визуальная заглушка)
+        document.querySelectorAll('.vote-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const container = this.closest('.voting-container');
+                const countEl = container.querySelector('.vote-count');
+                const isUp = this.classList.contains('up');
+                const isActive = this.classList.contains('active');
+
+                // Сбрасываем все кнопки
+                container.querySelectorAll('.vote-btn').forEach(b => b.classList.remove('active'));
+
+                let current = parseInt(countEl.textContent) || 0;
+
+                if (isActive) {
+                    // Отмена голоса
+                    countEl.textContent = current + (isUp ? -1 : 1);
+                } else {
+                    // Новый голос
+                    this.classList.add('active');
+                    countEl.textContent = current + (isUp ? 1 : -1);
+                }
+
+                // Обновляем цвет счётчика
+                const newVal = parseInt(countEl.textContent);
+                countEl.classList.remove('positive', 'negative');
+                if (newVal > 0) countEl.classList.add('positive');
+                else if (newVal < 0) countEl.classList.add('negative');
+
+                // Анимация
+                countEl.classList.remove('changed');
+                void countEl.offsetWidth;
+                countEl.classList.add('changed');
+            });
+        });
+    });
+</script>
+{% endblock %}

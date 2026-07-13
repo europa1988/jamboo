@@ -1,0 +1,38 @@
+{% load humanize %}
+
+{% if comments %}
+    <div class="space-y-3">
+        {% for comment in comments %}
+        <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="flex">
+                <!-- Голосование -->
+                <div class="mr-3">
+                    {% include 'votes/partials/comment_vote.html' with comment=comment user_vote=comment.user_vote %}
+                </div>
+                
+                <div class="flex-1">
+                    <div class="text-xs text-gray-500 mb-1">
+                        <a href="{% url 'users:profile' comment.author.username %}" class="font-medium text-gray-700 hover:underline">u/{{ comment.author.username }}</a>
+                        <span>•</span>
+                        <span>{{ comment.created_at|timesince }} назад</span>
+                        <span>•</span>
+                        <a href="{{ comment.post.get_absolute_url }}" class="hover:underline">c/{{ comment.post.community.name }}</a>
+                    </div>
+                    
+                    <p class="text-gray-800 text-sm">{{ comment.content|truncatewords:50 }}</p>
+                    
+                    <div class="mt-2">
+                        <a href="{{ comment.post.get_absolute_url }}" class="text-xs text-orange-500 hover:underline">
+                            Перейти к посту →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">
+        <p>Пользователь пока не оставил комментариев</p>
+    </div>
+{% endif %}

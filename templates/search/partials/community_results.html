@@ -1,0 +1,55 @@
+{% if results %}
+    <p class="text-sm text-gray-500 mb-3">Найдено {{ total_count }} сообществ</p>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for community in results %}
+        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+            <div class="flex items-start space-x-3">
+                <div class="w-12 h-12 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 font-bold text-lg flex-shrink-0">
+                    {% if community.avatar %}
+                    <img src="{{ community.avatar.url }}" class="w-full h-full rounded-full object-cover">
+                    {% else %}
+                    {{ community.name|first|upper }}
+                    {% endif %}
+                </div>
+                
+                <div class="flex-1 min-w-0">
+                    <a href="{% url 'communities:detail' community.slug %}" class="block">
+                        <h3 class="text-lg font-semibold text-gray-900 hover:underline">c/{{ community.name }}</h3>
+                    </a>
+                    <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ community.description|truncatewords:15 }}</p>
+                    
+                    <div class="flex items-center space-x-3 mt-3 text-xs text-gray-500">
+                        <span>{{ community.member_count }} участников</span>
+                        <span>•</span>
+                        <span>{{ community.posts.count }} постов</span>
+                        <span>•</span>
+                        <span>{{ community.get_community_type_display }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Пагинация -->
+    {% if results.has_other_pages %}
+    <div class="flex justify-center space-x-2 mt-4">
+        {% if results.has_previous %}
+        <a href="?q={{ query|urlencode }}&type=communities&page={{ results.previous_page_number }}" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:shadow text-sm">← Назад</a>
+        {% endif %}
+        <span class="px-4 py-2 bg-white rounded-lg shadow-sm text-sm text-gray-600">
+            Страница {{ results.number }} из {{ results.paginator.num_pages }}
+        </span>
+        {% if results.has_next %}
+        <a href="?q={{ query|urlencode }}&type=communities&page={{ results.next_page_number }}" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:shadow text-sm">Вперёд →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+{% else %}
+    <div class="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">
+        <p class="text-lg mb-2">Сообщества не найдены</p>
+        <p class="text-sm">Попробуйте другой запрос или <a href="{% url 'communities:create' %}" class="text-orange-500 hover:underline">создайте своё</a></p>
+    </div>
+{% endif %}

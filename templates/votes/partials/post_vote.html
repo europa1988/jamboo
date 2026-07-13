@@ -1,0 +1,32 @@
+<div class="vote-widget flex flex-col items-center space-y-1" id="post-vote-{{ post.id }}">
+    <button 
+        hx-post="{% url 'votes:post' post.id %}"
+        hx-vals='{"action": "up"}'
+        hx-target="#post-vote-{{ post.id }}"
+        hx-swap="outerHTML"
+        class="text-lg leading-none transition-colors p-1 rounded hover:bg-gray-200
+        {% if user_vote == 1 %}text-orange-500{% else %}text-gray-400{% endif %}"
+        title="Апвоут"
+    >
+        ▲
+    </button>
+    
+    <span class="text-sm font-bold 
+        {% if user_vote == 1 %}text-orange-500
+        {% elif user_vote == -1 %}text-blue-500
+        {% else %}text-gray-700{% endif %}">
+        {{ post.score }}
+    </span>
+    
+    <button 
+        hx-post="{% url 'votes:post' post.id %}"
+        hx-vals='{"action": "down"}'
+        hx-target="#post-vote-{{ post.id }}"
+        hx-swap="outerHTML"
+        class="text-lg leading-none transition-colors p-1 rounded hover:bg-gray-200
+        {% if user_vote == -1 %}text-blue-500{% else %}text-gray-400{% endif %}"
+        title="Даунвоут"
+    >
+        ▼
+    </button>
+</div>

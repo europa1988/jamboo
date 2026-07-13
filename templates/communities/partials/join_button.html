@@ -1,0 +1,26 @@
+{% if user.is_authenticated %}
+    {% if is_member %}
+    <button 
+        hx-post="{% url 'communities:leave' community.slug %}"
+        hx-target="this"
+        hx-swap="outerHTML"
+        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium transition-colors"
+    >
+        ✓ Вы участник
+    </button>
+    {% else %}
+    <button 
+        hx-post="{% url 'communities:join' community.slug %}"
+        hx-target="this"
+        hx-swap="outerHTML"
+        class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-sm font-medium transition-colors"
+    >
+        + Присоединиться
+    </button>
+    {% endif %}
+{% else %}
+    <a href="{% url 'users:login' %}?next={{ request.path }}" 
+       class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-sm font-medium transition-colors inline-block">
+        + Присоединиться
+    </a>
+{% endif %}

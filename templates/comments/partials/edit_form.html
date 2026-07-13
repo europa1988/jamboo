@@ -1,0 +1,35 @@
+<!-- Форма редактирования комментария (HTMX) -->
+<div class="edit-form-wrapper mb-3" id="comment-{{ comment.id }}">
+    <div class="bg-yellow-50 rounded-lg p-3">
+        <p class="text-xs text-gray-500 mb-2">Редактирование комментария</p>
+        <form 
+            hx-post="{% url 'comments:edit' comment.id %}"
+            hx-target="#comment-{{ comment.id }}"
+            hx-swap="outerHTML"
+        >
+            {% csrf_token %}
+            <textarea 
+                name="content" 
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y text-sm mb-2"
+                required
+            >{{ comment.content }}</textarea>
+            
+            <div class="flex justify-end space-x-2">
+                <button 
+                    type="button"
+                    onclick="window.location.reload();"
+                    class="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                    Отмена
+                </button>
+                <button 
+                    type="submit"
+                    class="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                    Сохранить
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

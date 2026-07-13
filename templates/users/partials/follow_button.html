@@ -1,0 +1,19 @@
+{% if user.is_authenticated and user != profile_user %}
+<button 
+    hx-post="{% url 'users:follow' profile_user.username %}"
+    hx-target="this"
+    hx-swap="outerHTML"
+    class="px-4 py-2 rounded-full text-sm font-medium transition-colors
+    {% if is_following %}
+        bg-gray-100 hover:bg-gray-200 text-gray-700
+    {% else %}
+        bg-orange-500 hover:bg-orange-600 text-white
+    {% endif %}"
+>
+    {% if is_following %}
+        ✓ Вы подписаны
+    {% else %}
+        + Подписаться
+    {% endif %}
+</button>
+{% endif %}

@@ -1,0 +1,50 @@
+<div class="notification-item flex items-start space-x-3 p-3 rounded-lg transition-colors {% if not notification.is_read %}bg-orange-50{% else %}hover:bg-gray-50{% endif %}" id="notification-{{ notification.id }}">
+    <!-- Аватар отправителя -->
+    <div class="w-10 h-10 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 font-bold text-sm flex-shrink-0">
+        {% if notification.sender and notification.sender.profile.avatar %}
+        <img src="{{ notification.sender.profile.avatar.url }}" class="w-full h-full rounded-full object-cover">
+        {% elif notification.sender %}
+        {{ notification.sender.username|first|upper }}
+        {% else %}
+        🔔
+        {% endif %}
+    </div>
+    
+    <div class="flex-1 min-w-0">
+        <p class="text-sm text-gray-800">
+            {% if notification.sender %}
+            <a href="{% url 'users:profile' notification.sender.username %}" class="font-medium text-gray-900 hover:underline">u/{{ notification.sender.username }}</a>
+            {% else %}
+            <span class="font-medium text-gray-900">Jamboo</span>
+            {% endif %}
+            {{ notification.message }}
+        </p>
+        <p class="text-xs text-gray-500 mt-1">{{ notification.created_at|timesince }} назад</p>
+    </div>
+    
+    <!-- Действия -->
+    <div class="flex items-center space-x-1 flex-shrink-0">
+        {% if not notification.is_read %}
+        <button 
+            hx-post="{% url 'notifications:mark_read' notification.id %}"
+            hx-target="#notification-{{ notification.id }}"
+            hx-swap="outerHTML"
+            class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-orange-100 text-orange-600 transition-colors"
+            title="Пометить как прочитанное"
+        >
+            ✓
+        </button>
+        {% endif %}
+        
+        <button 
+            hx-post="{% url 'notifications:delete' notification.id %}"
+            hx-target="#notification-{{ notification.id }}"
+            hx-swap="outerHTML"
+            hx-confirm="Удалить уведомление?"
+            class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-100 text-red-500 transition-colors"
+            title="Удалить"
+        >
+            ✕
+        </button>
+    </div>
+</div>

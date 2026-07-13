@@ -1,0 +1,61 @@
+{% load humanize %}
+
+{% if results %}
+    <p class="text-sm text-gray-500 mb-3">Найдено {{ total_count }} постов</p>
+    
+    {% for post in results %}
+    <article class="bg-white rounded-lg shadow-sm mb-3 hover:shadow-md transition-shadow">
+        <div class="flex">
+            <!-- Голосование -->
+            <div class="w-12 bg-gray-50 rounded-l-lg p-2 flex flex-col items-center">
+                {% include 'votes/partials/post_vote.html' with post=post user_vote=post.user_vote %}
+            </div>
+            
+            <!-- Контент -->
+            <div class="flex-1 p-3">
+                <div class="text-xs text-gray-500 mb-1">
+                    <a href="{% url 'communities:detail' post.community.slug %}" class="hover:underline font-medium text-gray-700">c/{{ post.community.name }}</a>
+                    <span>•</span>
+                    <span>{{ post.created_at|timesince }} назад</span>
+                    <span>•</span>
+                    <a href="{% url 'users:profile' post.author.username %}" class="hover:underline">u/{{ post.author.username }}</a>
+                </div>
+                
+                <a href="{{ post.get_absolute_url }}" class="block">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-2 hover:underline">{{ post.title }}</h2>
+                </a>
+                
+                {% if post.content %}
+                <p class="text-gray-700 text-sm line-clamp-3">{{ post.content|truncatewords:50 }}</p>
+                {% endif %}
+                
+                <div class="flex items-center space-x-4 mt-3 text-xs text-gray-500">
+                    <span>⬆ {{ post.score }}</span>
+                    <span>💬 {{ post.comment_count }} комментариев</span>
+                </div>
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+    
+    <!-- Пагинация -->
+    {% if results.has_other_pages %}
+    <div class="flex justify-center space-x-2 mt-4">
+        {% if results.has_previous %}
+        <a href="?q={{ query|urlencode }}&type=posts&page={{ results.previous_page_number }}" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:shadow text-sm">← Назад</a>
+        {% endif %}
+        <span class="px-4 py-2 bg-white rounded-lg shadow-sm text-sm text-gray-600">
+            Страница {{ results.number }} из {{ results.paginator.num_pages }}
+        </span>
+        {% if results.has_next %}
+        <a href="?q={{ query|urlencode }}&type=posts&page={{ results.next_page_number }}" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:shadow text-sm">Вперёд →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+{% else %}
+    <div class="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">
+        <p class="text-lg mb-2">Посты не найдены</p>
+        <p class="text-sm">Попробуйте другой запрос</p>
+    </div>
+{% endif %}

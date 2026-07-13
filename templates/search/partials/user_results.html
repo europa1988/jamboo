@@ -1,0 +1,65 @@
+{% if results %}
+    <p class="text-sm text-gray-500 mb-3">Найдено {{ total_count }} пользователей</p>
+    
+    <div class="space-y-3">
+        {% for profile_user in results %}
+        <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+            <div class="flex items-center space-x-4">
+                <!-- Аватар -->
+                <div class="w-14 h-14 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 text-xl font-bold flex-shrink-0">
+                    {% if profile_user.profile.avatar %}
+                    <img src="{{ profile_user.profile.avatar.url }}" class="w-full h-full rounded-full object-cover">
+                    {% else %}
+                    {{ profile_user.username|first|upper }}
+                    {% endif %}
+                </div>
+                
+                <div class="flex-1">
+                    <a href="{% url 'users:profile' profile_user.username %}" class="block">
+                        <h3 class="text-lg font-semibold text-gray-900 hover:underline">u/{{ profile_user.username }}</h3>
+                    </a>
+                    {% if profile_user.profile.bio %}
+                    <p class="text-sm text-gray-500 mt-1">{{ profile_user.profile.bio|truncatewords:10 }}</p>
+                    {% endif %}
+                    
+                    <div class="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                        <span>Карма: {{ profile_user.karma }}</span>
+                        <span>•</span>
+                        <span>{{ profile_user.posts.count }} постов</span>
+                        <span>•</span>
+                        <span>{{ profile_user.comments.count }} комментариев</span>
+                    </div>
+                </div>
+                
+                <!-- Кнопка подписки -->
+                {% if user.is_authenticated and user != profile_user %}
+                <div class="flex-shrink-0">
+                    {% include 'users/partials/follow_button.html' with profile_user=profile_user is_following=profile_user.is_following %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Пагинация -->
+    {% if results.has_other_pages %}
+    <div class="flex justify-center space-x-2 mt-4">
+        {% if results.has_previous %}
+        <a href="?q={{ query|urlencode }}&type=users&page={{ results.previous_page_number }}" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:shadow text-sm">← Назад</a>
+        {% endif %}
+        <span class="px-4 py-2 bg-white rounded-lg shadow-sm text-sm text-gray-600">
+            Страница {{ results.number }} из {{ results.paginator.num_pages }}
+        </span>
+        {% if results.has_next %}
+        <a href="?q={{ query|urlencode }}&type=users&page={{ results.next_page_number }}" class="px-4 py-2 bg-white rounded-lg shadow-sm hover:shadow text-sm">Вперёд →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+{% else %}
+    <div class="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">
+        <p class="text-lg mb-2">Пользователи не найдены</p>
+        <p class="text-sm">Попробуйте другой запрос</p>
+    </div>
+{% endif %}

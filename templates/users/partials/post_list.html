@@ -1,0 +1,37 @@
+{% load humanize %}
+
+{% if posts %}
+    {% for post in posts %}
+    <article class="bg-white rounded-lg shadow-sm mb-3 hover:shadow-md transition-shadow">
+        <div class="flex">
+            <!-- Голосование -->
+            <div class="w-12 bg-gray-50 rounded-l-lg p-2 flex flex-col items-center">
+                {% include 'votes/partials/post_vote.html' with post=post user_vote=post.user_vote %}
+            </div>
+            
+            <!-- Контент -->
+            <div class="flex-1 p-3">
+                <div class="text-xs text-gray-500 mb-1">
+                    <a href="{% url 'communities:detail' post.community.slug %}" class="hover:underline font-medium text-gray-700">c/{{ post.community.name }}</a>
+                    <span>•</span>
+                    <span>{{ post.created_at|timesince }} назад</span>
+                    <span>•</span>
+                    <a href="{{ post.get_absolute_url }}" class="hover:underline">{{ post.comment_count }} комментариев</a>
+                </div>
+                
+                <a href="{{ post.get_absolute_url }}" class="block">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-2 hover:underline">{{ post.title }}</h2>
+                </a>
+                
+                {% if post.content %}
+                <p class="text-gray-700 text-sm line-clamp-2">{{ post.content|truncatewords:30 }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+{% else %}
+    <div class="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">
+        <p>Пользователь пока не создал постов</p>
+    </div>
+{% endif %}

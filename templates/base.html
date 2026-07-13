@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Jamboo{% endblock %}</title>
+
+    <!-- Tailwind CSS через CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@2.0.0"></script>
+
+    <!-- CSRF-токен для HTMX -->
+    <script>
+        document.addEventListener('htmx:configRequest', function(evt) {
+            evt.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        });
+    </script>
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- Tailwind Config с твоими цветами и darkMode -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'jamboo-orange': '#ff6b35',
+                        'jamboo-dark': '#1a1a1b',
+                        'jamboo-light-gray': '#f6f7f8',
+                        'jamboo-dark-gray': '#818384',
+                        'jamboo-blue': '#0079d3',
+                        'jamboo-card-bg': '#f6f7f8',
+                        'jamboo-border': '#e5e7eb',
+                        'jamboo-footer': '#0f172a',
+                        'jamboo-header-start': '#1a5f9e',
+                        'jamboo-header-end': '#0a2a5a',
+                        'dark-bg': '#121212',
+                        'dark-card': '#1e1e1e',
+                        'dark-text': '#e0e0e0',
+                        'dark-border': '#333333',
+                    },
+                    borderRadius: {
+                        'global': '16px',
+                        'element': '12px',
+                        'button': '24px',
+                        'small': '8px'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Критически важно: устанавливаем тему ДО рендера страницы -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
+    <style>
+        /* Базовые стили */
+        body, button, input, textarea, select {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+        }
+        .scrollbar-hidden::-webkit-scrollbar { display: none; }
+        .scrollbar-hidden { -ms-overflow-style: none; scrollbar-width: none; }
+        .text-balance { text-wrap: balance; }
+
+        /* Мобильное меню */
+        .mobile-menu { transform: translateX(-100%); transition: transform 0.3s ease; }
+        .mobile-menu.active { transform: translateX(0); }
+
+        /* Шапка */
+        .header-gradient { background: linear-gradient(90deg, #1a5f9e 0%, #0a2a5a 100%); }
+        .header-hidden { transform: translateY(-100%); }
+        .header-visible { transform: translateY(0); }
+        .header-transition { transition: transform 0.3s ease; }
+
+        /* Аккордеон */
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+        .accordion-content.open { max-height: 500px; }
+
+        /* Dropdown */
+        .dropdown-user { position: relative; }
+        .dropdown-menu { 
+            display: none; 
+            position: absolute; 
+            right: 0; 
+            margin-top: 0.5rem; 
+            background: white; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+            min-width: 180px; 
+            z-index: 50; 
+            overflow: hidden;
+        }
+        .dropdown-menu.show { display: block; }
+        .dropdown-menu a { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            padding: 0.75rem 1rem; 
+            color: #374151; 
+            transition: background 0.2s; 
+        }
+        .dropdown-menu a:hover { background: #f6f7f8; }
+        .dropdown-menu hr { margin: 0.25rem 0; border-color: #e5e7eb; }
+
+        /* Кастомные радиусы */
+        .rounded-global { border-radius: 16px; }
+        .rounded-button { border-radius: 24px; }
+        .rounded-small { border-radius: 8px; }
+
+        /* ==================== ТЁМНАЯ ТЕМА ==================== */
+
+        /* Фон body */
+        .dark body { background-color: #1a2235; }
+
+        /* Карточки и сайдбары */
+        .dark #leftSidebar, 
+        .dark .w-80 > div, 
+        .dark .bg-white:not(.dropdown-menu):not(header *):not(footer *), 
+        .dark .dark\:bg-dark-card { 
+            background-color: #141b2d !important; 
+            border-color: #2a3550; 
+        }
+
+        /* Центральная колонка */
+        .dark .flex-1.min-w-0 { 
+            background-color: transparent; 
+        }
+
+        /* Футер */
+        .dark footer { 
+            background: linear-gradient(90deg, #0f1627 0%, #0a2a5a 100%) !important; 
+        }
+
+        /* Текст */
+        .dark, 
+        .dark .text-gray-700, 
+        .dark .dark\:text-dark-text, 
+        .dark .dark\:text-gray-300 { 
+            color: #e0e7ff; 
+        }
+
+        .dark .text-jamboo-dark-gray, 
+        .dark .dark\:text-gray-400 { 
+            color: #a0abc0; 
+        }
+
+        /* Голосование */
+        .dark .vote-count { 
+            background-color: #0f1627; 
+            color: #e0e7ff; 
+        }
+
+        .dark .voting-container { 
+            background: linear-gradient(135deg, #0f1627 0%, #141b2d 100%); 
+        }
+
+        /* Категории */
+        .dark .category-item:hover, 
+        .dark .dark\:hover\:bg-gray-700:hover { 
+            background-color: #0f1627; 
+        }
+
+        /* Границы */
+        .dark .border-jamboo-border, 
+        .dark .dark\:border-dark-border { 
+            border-color: #2a3550; 
+        }
+
+        .dark .border-gray-200,
+        .dark .border-gray-100 {
+            border-color: #2a3550;
+        }
+
+        /* Оранжевый акцент */
+        .dark .text-jamboo-orange { 
+            color: #ff6b35; 
+        }
+
+        /* Dropdown в тёмной теме */
+        .dark .dropdown-menu { 
+            background: #1e1e1e; 
+            border: 1px solid #333; 
+        }
+        .dark .dropdown-menu a { 
+            color: #e0e0e0; 
+        }
+        .dark .dropdown-menu a:hover { 
+            background: #2a2a2a; 
+        }
+        .dark .dropdown-menu hr { 
+            border-color: #333; 
+        }
+
+        /* Фильтры */
+        .dark .bg-orange-100 {
+            background-color: rgba(255, 107, 53, 0.2);
+        }
+
+        .dark .hover\:bg-gray-100:hover {
+            background-color: #1e293b;
+        }
+
+        /* Пагинация */
+        .dark .bg-white.rounded-global.shadow-sm {
+            background-color: #141b2d;
+            border: 1px solid #2a3550;
+        }
+
+        /* Мобильное меню */
+        .dark .mobile-menu {
+            background-color: #141b2d;
+        }
+
+        /* Сообщения */
+        .dark .bg-green-500, .dark .bg-red-500, .dark .bg-yellow-500, .dark .bg-blue-500 {
+            color: white;
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+<base target="_blank">
+</head>
+<body class="bg-jamboo-light-gray text-gray-900 min-h-screen flex flex-col font-sans dark:bg-dark-bg dark:text-dark-text">
+
+    <!-- Шапка -->
+    <header id="mainHeader" class="header-gradient px-4 py-2 h-16 flex items-center justify-between shadow-lg z-50 rounded-b-global fixed top-0 left-0 right-0 header-transition header-visible">
+        <div class="flex items-center gap-3">
+            <button id="hamburger" class="md:hidden text-white text-xl w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/20 transition">
+                <span class="material-icons">menu</span>
+            </button>
+            <a href="/" class="flex items-center gap-2 text-white">
+                <div class="text-white text-3xl"><span class="material-icons">forum</span></div>
+                <div class="text-white text-xl font-bold hidden md:block">Jamboo</div>
+            </a>
+        </div>
+
+        <div class="flex-1 max-w-xl mx-3">
+            <div class="relative">
+                <span class="material-icons absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70">search</span>
+                <input type="text" class="w-full py-2 pl-12 pr-4 bg-white/90 rounded-button border border-white/30 focus:outline-none focus:ring-2 focus:ring-white focus:bg-white transition text-gray-700 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-300" placeholder="Поиск в Jamboo">
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- Переключатель темы -->
+            <button id="themeToggle" class="text-white text-lg w-9 h-9 rounded-full hover:bg-white/20 transition flex items-center justify-center" title="Переключить тему">
+                <span class="material-icons" id="themeIcon">dark_mode</span>
+            </button>
+
+            {% if user.is_authenticated %}
+                <button class="hidden sm:flex text-white text-lg w-9 h-9 rounded-full hover:bg-white/20 transition items-center justify-center">
+                    <span class="material-icons">notifications</span>
+                </button>
+                <button class="hidden sm:flex text-white text-lg w-9 h-9 rounded-full hover:bg-white/20 transition items-center justify-center">
+                    <span class="material-icons">chat</span>
+                </button>
+
+                <div class="dropdown-user relative">
+                    <button id="userMenuBtn" class="flex items-center gap-2 bg-white/20 px-2 py-1 rounded-button hover:bg-white/30 transition cursor-pointer">
+                        <div class="w-7 h-7 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 text-xs font-bold overflow-hidden">
+                            {% if user.profile.avatar %}
+                            <img src="{{ user.profile.avatar.url }}" class="w-full h-full object-cover">
+                            {% else %}
+                            {{ user.username|first|upper }}
+                            {% endif %}
+                        </div>
+                        <span class="hidden md:inline text-sm font-medium text-white">{{ user.username }}</span>
+                        <span class="material-icons text-white text-sm">expand_more</span>
+                    </button>
+                    <div id="userDropdown" class="dropdown-menu">
+                        <a href="#" class="flex items-center gap-3"><span class="material-icons text-gray-400">person</span> Профиль</a>
+                        <a href="#" class="flex items-center gap-3"><span class="material-icons text-gray-400">settings</span> Настройки</a>
+                        <hr>
+                        <a href="#" class="flex items-center gap-3 text-red-600"><span class="material-icons text-red-400">logout</span> Выйти</a>
+                    </div>
+                </div>
+            {% else %}
+                <a href="#" class="text-white hover:text-white/80 text-sm font-medium transition">Войти</a>
+                <a href="#" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-button text-sm font-medium transition">Регистрация</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Оверлей и мобильное меню -->
+    <div id="menuOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+    <div id="mobileMenu" class="mobile-menu md:hidden fixed top-0 left-0 bottom-0 w-64 bg-white z-50 overflow-y-auto scrollbar-hidden">
+        <div class="h-16 flex items-center px-4 border-b border-jamboo-border">
+            <div class="flex items-center gap-3">
+                <div class="text-jamboo-header-start text-3xl"><span class="material-icons">forum</span></div>
+                <div class="text-xl font-bold">Jamboo</div>
+            </div>
+        </div>
+        <div class="p-4">
+            <h3 class="font-bold text-base py-3 px-4 border-b border-jamboo-border">КАТЕГОРИИ</h3>
+            <div class="py-2">
+                <div class="flex items-center justify-between px-4 py-2 cursor-pointer group accordion-header">
+                    <h4 class="font-medium text-gray-700">О проекте</h4>
+                    <span class="material-icons text-gray-500 group-hover:text-jamboo-orange transition">expand_more</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="pl-6 pr-4 mt-1">
+                        <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                            <span class="material-icons text-sm text-gray-500 mr-2">work</span>Вакансии
+                        </a>
+                        <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                            <span class="material-icons text-sm text-gray-500 mr-2">article</span>Пресса
+                        </a>
+                        <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                            <span class="material-icons text-sm text-gray-500 mr-2">campaign</span>Реклама
+                        </a>
+                        <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                            <span class="material-icons text-sm text-gray-500 mr-2">article</span>Блог
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="py-2">
+                <div class="flex items-center justify-between px-4 py-2 cursor-pointer group accordion-header">
+                    <h4 class="font-medium text-gray-700">Сообщества</h4>
+                    <span class="material-icons text-gray-500 group-hover:text-jamboo-orange transition">expand_more</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="pl-6 pr-4 mt-1">
+                        <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                            <span class="material-icons text-sm text-gray-500 mr-2">palette</span>Искусство
+                        </a>
+                        <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                            <span class="material-icons text-sm text-gray-500 mr-2">sports_esports</span>Игры
+                        </a>
+                        <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                            <span class="material-icons text-sm text-gray-500 mr-2">sports_soccer</span>Спорт
+                        </a>
+                        <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                            <span class="material-icons text-sm text-gray-500 mr-2">music_note</span>Музыка
+                        </a>
+                        <a href="#" class="category-item px-4 py-2 rounded-small flex items-center text-sm text-gray-700 hover:text-jamboo-orange transition">
+                            <span class="material-icons text-sm text-gray-500 mr-2">science</span>Наука
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <h3 class="font-bold text-base py-3 px-4 border-b border-jamboo-border mt-4">ПОПУЛЯРНЫЕ СООБЩЕСТВА</h3>
+            <ul class="py-2">
+                {% for community in popular_communities|slice:":5" %}
+                <li>
+                    <a href="#" class="flex items-center px-4 py-2 hover:bg-jamboo-light-gray rounded-small transition">
+                        {% if community.avatar %}
+                        <img src="{{ community.avatar.url }}" class="w-7 h-7 rounded-small object-cover mr-2">
+                        {% else %}
+                        <div class="w-7 h-7 rounded-small bg-orange-200 flex items-center justify-center text-orange-700 text-xs font-bold mr-2">
+                            {{ community.name|first|upper }}
+                        </div>
+                        {% endif %}
+                        <span class="text-sm font-medium">c/{{ community.name }}</span>
+                    </a>
+                </li>
+                {% empty %}
+                <li class="px-4 py-2 text-sm text-gray-500">Пока нет сообществ</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Сообщения Django -->
+    {% if messages %}
+    <div class="fixed top-20 right-4 z-50 space-y-2">
+        {% for message in messages %}
+        <div class="px-4 py-3 rounded-global shadow-lg text-white text-sm font-medium animate-fade-in
+            {% if message.tags == 'success' %}bg-green-500
+            {% elif message.tags == 'error' %}bg-red-500
+            {% elif message.tags == 'warning' %}bg-yellow-500
+            {% else %}bg-blue-500{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Основной контент -->
+    <main class="flex-1 max-w-7xl mx-auto w-full px-3 pt-20 pb-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Футер -->
+    <footer class="bg-gradient-to-r from-jamboo-header-start to-jamboo-header-end text-white mt-auto rounded-t-global">
+        <div class="max-w-7xl mx-auto px-4 py-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="material-icons text-jamboo-orange text-3xl">forum</span>
+                        <h3 class="text-xl font-bold">Jamboo</h3>
+                    </div>
+                    <p class="text-gray-300 text-sm mb-4">Лучшее место для обсуждения любых тем. Присоединяйтесь к сообществу.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4 border-b border-white/20 pb-2">Навигация</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/" class="text-gray-300 hover:text-white text-sm transition flex items-center gap-2"><span class="material-icons text-sm">home</span>Главная</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white text-sm transition flex items-center gap-2"><span class="material-icons text-sm">trending_up</span>Популярное</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white text-sm transition flex items-center gap-2"><span class="material-icons text-sm">forum</span>Сообщества</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4 border-b border-white/20 pb-2">Сообщества</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white text-sm transition flex items-center gap-2"><span class="material-icons text-sm">palette</span>Искусство</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white text-sm transition flex items-center gap-2"><span class="material-icons text-sm">sports_esports</span>Игры</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white text-sm transition flex items-center gap-2"><span class="material-icons text-sm">science</span>Наука</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-lg mb-4 border-b border-white/20 pb-2">Поддержка</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white text-sm transition flex items-center gap-2"><span class="material-icons text-sm">help</span>Помощь</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white text-sm transition flex items-center gap-2"><span class="material-icons text-sm">gavel</span>Правила</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white text-sm transition flex items-center gap-2"><span class="material-icons text-sm">contact_support</span>Обратная связь</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-white/10 mt-8 pt-6 text-center text-gray-400 text-sm">
+                Jamboo © 2026 — Российская платформа для обсуждений
+            </div>
+        </div>
+    </footer>
+
+    <!-- Базовые скрипты -->
+    <script>
+        // ==================== ТЁМНАЯ ТЕМА ====================
+        const themeToggle = document.getElementById('themeIcon');
+        const themeBtn = document.getElementById('themeToggle');
+
+        function updateThemeIcon() {
+            const isDark = document.documentElement.classList.contains('dark');
+            themeToggle.textContent = isDark ? 'light_mode' : 'dark_mode';
+        }
+
+        if (themeBtn) {
+            themeBtn.addEventListener('click', () => {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateThemeIcon();
+            });
+        }
+
+        // Устанавливаем правильную иконку при загрузке
+        updateThemeIcon();
+
+        // ==================== МОБИЛЬНОЕ МЕНЮ ====================
+        const hamburger = document.getElementById('hamburger');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        function toggleMobileMenu() {
+            menuOverlay.classList.toggle('hidden');
+            mobileMenu.classList.toggle('active');
+            document.body.classList.toggle('overflow-hidden');
+        }
+
+        if (hamburger) hamburger.addEventListener('click', toggleMobileMenu);
+        if (menuOverlay) menuOverlay.addEventListener('click', toggleMobileMenu);
+
+        // ==================== АККОРДЕОНЫ ====================
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                const icon = header.querySelector('.material-icons');
+                content.classList.toggle('open');
+                icon.textContent = content.classList.contains('open') ? 'expand_less' : 'expand_more';
+            });
+        });
+
+        // ==================== DROPDOWN ПОЛЬЗОВАТЕЛЯ ====================
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userDropdown = document.getElementById('userDropdown');
+
+        if (userMenuBtn && userDropdown) {
+            userMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.classList.toggle('show');
+            });
+            document.addEventListener('click', (e) => {
+                if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // ==================== СКРЫТИЕ ШАПКИ ПРИ СКРОЛЛЕ ====================
+        let lastScrollTop = 0;
+        const header = document.getElementById('mainHeader');
+
+        if (header) {
+            window.addEventListener('scroll', () => {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                if (scrollTop > lastScrollTop && scrollTop > 100) {
+                    header.classList.remove('header-visible');
+                    header.classList.add('header-hidden');
+                } else {
+                    header.classList.remove('header-hidden');
+                    header.classList.add('header-visible');
+                }
+                lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+            });
+        }
+
+        // ==================== АВТО-СКРЫТИЕ СООБЩЕНИЙ ====================
+        document.querySelectorAll('.animate-fade-in').forEach(el => {
+            setTimeout(() => el.remove(), 4000);
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

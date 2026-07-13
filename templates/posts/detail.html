@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ post.title }} — c/{{ post.community.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    
+    <!-- Пост -->
+    <article class="bg-white rounded-lg shadow-sm mb-4">
+        <div class="flex">
+            <!-- Голосование -->
+            <div class="w-12 bg-gray-50 rounded-l-lg p-2 flex flex-col items-center">
+                {% include 'votes/partials/post_vote.html' with post=post user_vote=user_vote %}
+            </div>
+            
+            <!-- Контент -->
+            <div class="flex-1 p-4">
+                <!-- Мета -->
+                <div class="text-xs text-gray-500 mb-2 flex items-center space-x-1">
+                    <a href="#" class="hover:underline font-medium text-gray-700">c/{{ post.community.name }}</a>
+                    <span>•</span>
+                    <span>{{ post.created_at|timesince }} назад</span>
+                    <span>•</span>
+                    <a href="{% url 'users:profile' post.author.username %}" class="hover:underline">u/{{ post.author.username }}</a>
+                    
+                    {% if post.is_nsfw %}
+                    <span class="bg-red-100 text-red-600 px-1.5 py-0.5 rounded text-[10px] font-bold ml-1">NSFW</span>
+                    {% endif %}
+                    {% if post.is_spoiler %}
+                    <span class="bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded text-[10px] font-bold ml-1">СПОЙЛЕР</span>
+                    {% endif %}
+                    
+                    {% if post.edited_at %}
+                    <span>•</span>
+                    <span class="text-gray-400">(изменено)</span>
+                    {% endif %}
+                </div>
+                
+                <!-- Заголовок -->
+                <h1 class="text-xl font-bold text-gray-900 mb-3">{{ post.title }}</h1>
+                
+                <!-- Контент в зависимости от типа -->
+                {% if post.post_type == 'text' and post.content %}
+                <div class="text-gray-800 leading-relaxed mb-4 whitespace-pre-wrap">{{ post.content }}</div>
+                
+                {% elif post.post_type == 'link' and post.url %}
+                <a href="{{ post.url }}" target="_blank" rel="noopener" class="inline-flex items-center space-x-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors mb-4">
+                    <span>🔗</span>
+                    <span>{{ post.url }}</span>
+                </a>
+                
+                {% elif post.post_type == 'image' and post.image %}
+                <div class="mb-4">
+                    <img src="{{ post.image.url }}" alt="{{ post.title }}" class="max-w-full rounded-lg">
+                </div>
+                {% endif %}
+                
+                <!-- Действия -->
+                <div class="flex items-center space-x-4 text-sm text-gray-500 pt-3 border-t border-gray-100">
+                    <button class="flex items-center space-x-1 hover:bg-gray-100 px-3 py-1.5 rounded transition-colors">
+                        <span>💬</span>
+                        <span>{{ post.comment_count }} комментариев</span>
+                    </button>
+                    <button class="flex items-center space-x-1 hover:bg-gray-100 px-3 py-1.5 rounded transition-colors">
+                        <span>🔗</span>
+                        <span>Поделиться</span>
+                    </button>
+                    <button class="flex items-center space-x-1 hover:bg-gray-100 px-3 py-1.5 rounded transition-colors">
+                        <span>🔖</span>
+                        <span>Сохранить</span>
+                    </button>
+                    <button class="flex items-center space-x-1 hover:bg-gray-100 px-3 py-1.5 rounded transition-colors">
+                        <span>⚑</span>
+                        <span>Пожаловаться</span>
+                    </button>
+                    
+                    {% if user == post.author %}
+                    <a href="{% url 'posts:delete' post.id %}" 
+                       class="flex items-center space-x-1 hover:bg-red-50 text-red-500 px-3 py-1.5 rounded transition-colors"
+                       onclick="return confirm('Удалить пост?')">
+                        <span>🗑</span>
+                        <span>Удалить</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </article>
+    
+    <!-- Форма комментария верхнего уровня -->
+    {% if user.is_authenticated %}
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+        <h3 class="text-sm font-bold text-gray-700 mb-3">
+            Комментировать как <a href="{% url 'users:profile' user.username %}" class="text-orange-500 hover:underline">u/{{ user.username }}</a>
+        </h3>
+        <form method="post" action="{% url 'comments:create' post.id %}">
+            {% csrf_token %}
+            <textarea 
+                name="content" 
+                rows="3" 
+                placeholder="Что вы думаете?"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y mb-3"
+                required
+            ></textarea>
+            <div class="flex justify-end">
+                <button type="submit" class="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors">
+                    Комментировать
+                </button>
+            </div>
+        </form>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-4 text-center">
+        <p class="text-gray-600 mb-3">Войдите, чтобы оставить комментарий</p>
+        <a href="{% url 'users:login' %}?next={{ request.path }}" class="inline-block px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors">
+            Войти
+        </a>
+    </div>
+    {% endif %}
+    
+    <!-- Комментарии -->
+    <div class="space-y-1">
+        <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
+            {{ post.comment_count }} комментариев
+        </h3>
+        
+        <div id="comments-list">
+            {% for comment in comments %}
+                {% include 'comments/partials/comment.html' %}
+            {% empty %}
+            <div class="text-center text-gray-500 py-8 bg-white rounded-lg" id="no-comments">
+                <p class="mb-2">Комментариев пока нет</p>
+                <p class="text-sm">Будьте первым, кто поделится мнением!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

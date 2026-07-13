@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{% if query %}"{{ query }}" — Поиск{% else %}Поиск — Jamboo{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    
+    <!-- Форма поиска -->
+    <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+        <form method="get" action="{% url 'search:results' %}" class="flex space-x-2">
+            <input 
+                type="text" 
+                name="q" 
+                value="{{ query }}"
+                placeholder="Поиск по Jamboo..."
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                autocomplete="off"
+                hx-get="{% url 'search:suggestions' %}"
+                hx-trigger="keyup changed delay:300ms"
+                hx-target="#search-suggestions"
+                hx-swap="innerHTML"
+            >
+            <input type="hidden" name="type" value="{{ search_type }}">
+            <button type="submit" class="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors">
+                Найти
+            </button>
+        </form>
+        <!-- Подсказки -->
+        <div id="search-suggestions" class="relative"></div>
+    </div>
+    
+    {% if error %}
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800 text-center">
+        {{ error }}
+    </div>
+    {% else %}
+    
+    <!-- Вкладки типов поиска -->
+    <div class="bg-white rounded-lg shadow-sm mb-4">
+        <div class="flex border-b border-gray-100">
+            <a href="?q={{ query|urlencode }}&type=posts" 
+               class="flex-1 py-3 text-sm font-medium text-center transition-colors {% if search_type == 'posts' %}text-orange-600 border-b-2 border-orange-500{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-50{% endif %}">
+                📄 Посты {% if search_type == 'posts' and total_count %}({{ total_count }}){% endif %}
+            </a>
+            <a href="?q={{ query|urlencode }}&type=communities" 
+               class="flex-1 py-3 text-sm font-medium text-center transition-colors {% if search_type == 'communities' %}text-orange-600 border-b-2 border-orange-500{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-50{% endif %}">
+                🏘 Сообщества {% if search_type == 'communities' and total_count %}({{ total_count }}){% endif %}
+            </a>
+            <a href="?q={{ query|urlencode }}&type=users" 
+               class="flex-1 py-3 text-sm font-medium text-center transition-colors {% if search_type == 'users' %}text-orange-600 border-b-2 border-orange-500{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-50{% endif %}">
+                👤 Пользователи {% if search_type == 'users' and total_count %}({{ total_count }}){% endif %}
+            </a>
+        </div>
+    </div>
+    
+    <!-- Результаты -->
+    {% if search_type == 'posts' %}
+        {% include 'search/partials/post_results.html' %}
+    {% elif search_type == 'communities' %}
+        {% include 'search/partials/community_results.html' %}
+    {% elif search_type == 'users' %}
+        {% include 'search/partials/user_results.html' %}
+    {% endif %}
+    
+    {% endif %}
+</div>
+{% endblock %}

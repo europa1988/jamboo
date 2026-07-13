@@ -1,0 +1,14 @@
+{% if messages %}
+<div class="fixed top-16 right-4 z-50 space-y-2">
+    {% for message in messages %}
+    <div class="px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium
+        {% if message.tags == 'success' %}bg-green-500
+        {% elif message.tags == 'error' %}bg-red-500
+        {% elif message.tags == 'warning' %}bg-yellow-500
+        {% else %}bg-blue-500{% endif %}"
+        _="on load wait 3s then remove me">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

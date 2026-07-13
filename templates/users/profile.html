@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}u/{{ profile_user.username }} — Jamboo{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    
+    <!-- Шапка профиля -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
+        <!-- Баннер -->
+        <div class="h-32 bg-gradient-to-r from-orange-400 to-orange-600"></div>
+        
+        <div class="px-6 pb-6">
+            <div class="flex items-end -mt-12 mb-4">
+                <!-- Аватар -->
+                <div class="w-24 h-24 bg-white rounded-full p-1 shadow-lg">
+                    {% if profile_user.profile.avatar %}
+                    <img src="{{ profile_user.profile.avatar.url }}" alt="{{ profile_user.username }}" class="w-full h-full rounded-full object-cover">
+                    {% else %}
+                    <div class="w-full h-full rounded-full bg-orange-200 flex items-center justify-center text-orange-700 text-2xl font-bold">
+                        {{ profile_user.username|first|upper }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="ml-4 mb-2 flex-1">
+                    <h1 class="text-2xl font-bold text-gray-900">u/{{ profile_user.username }}</h1>
+                    <p class="text-sm text-gray-500">
+                        u/{{ profile_user.username }} • Карма: {{ profile_user.karma }} • 
+                        С нами с {{ profile_user.cake_day|date:"d.m.Y" }}
+                    </p>
+                </div>
+                
+                <!-- Кнопки действий -->
+                <div class="mb-2 space-x-2">
+                    {% if user == profile_user %}
+                    <a href="{% url 'users:profile_edit' %}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium transition-colors">
+                        Настройки
+                    </a>
+                    {% else %}
+                    {% include 'users/partials/follow_button.html' %}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Био -->
+            {% if profile_user.profile.bio %}
+            <p class="text-gray-700 text-sm mb-4">{{ profile_user.profile.bio }}</p>
+            {% endif %}
+            
+            <!-- Статистика -->
+            <div class="flex space-x-6 text-sm text-gray-600 border-t border-gray-100 pt-4">
+                <div>
+                    <span class="font-bold text-gray-900">{{ user_posts|length }}</span> постов
+                </div>
+                <div>
+                    <span class="font-bold text-gray-900">{{ user_comments|length }}</span> комментариев
+                </div>
+                <div>
+                    <span class="font-bold text-gray-900">{{ following_count }}</span> подписок
+                </div>
+                <div>
+                    <span class="font-bold text-gray-900">{{ followers_count }}</span> подписчиков
+                </div>
+                <div>
+                    <span class="font-bold text-orange-600">{{ post_karma }}</span> карма постов
+                </div>
+                <div>
+                    <span class="font-bold text-blue-600">{{ comment_karma }}</span> карма комментариев
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Вкладки -->
+    <div class="bg-white rounded-lg shadow-sm mb-4">
+        <div class="flex border-b border-gray-100">
+            <button 
+                hx-get="{% url 'users:user_posts' profile_user.username %}"
+                hx-target="#profile-content"
+                hx-swap="innerHTML"
+                hx-push-url="?tab=posts"
+                class="flex-1 py-3 text-sm font-medium text-center transition-colors {% if active_tab == 'posts' %}text-orange-600 border-b-2 border-orange-500{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-50{% endif %}"
+            >
+                📄 Посты
+            </button>
+            <button 
+                hx-get="{% url 'users:user_comments' profile_user.username %}"
+                hx-target="#profile-content"
+                hx-swap="innerHTML"
+                hx-push-url="?tab=comments"
+                class="flex-1 py-3 text-sm font-medium text-center transition-colors {% if active_tab == 'comments' %}text-orange-600 border-b-2 border-orange-500{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-50{% endif %}"
+            >
+                💬 Комментарии
+            </button>
+        </div>
+    </div>
+    
+    <!-- Контент вкладки -->
+    <div id="profile-content">
+        {% if active_tab == 'comments' %}
+            {% include 'users/partials/comment_list.html' %}
+        {% else %}
+            {% include 'users/partials/post_list.html' %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

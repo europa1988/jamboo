@@ -1,0 +1,93 @@
+{% load humanize %}
+
+<div class="comment-item" id="comment-{{ comment.id }}">
+    <div class="flex">
+        <!-- Линия вложенности (визуальная) -->
+        {% if comment.depth > 0 %}
+        <div class="w-6 flex-shrink-0 border-l-2 border-gray-200 mr-2"></div>
+        {% endif %}
+        
+        <div class="flex-1">
+            <!-- Шапка комментария -->
+            <div class="flex items-center space-x-2 text-xs text-gray-500 mb-1">
+                <a href="{% url 'users:profile' comment.author.username %}" class="font-medium text-gray-700 hover:underline">
+                    u/{{ comment.author.username }}
+                </a>
+                <span>•</span>
+                <span>{{ comment.score }} баллов</span>
+                <span>•</span>
+                <span>{{ comment.created_at|timesince }} назад</span>
+                {% if comment.edited_at %}
+                <span>•</span>
+                <span class="text-gray-400">(изменено)</span>
+                {% endif %}
+            </div>
+            
+            <!-- Текст комментария -->
+            <div class="text-gray-800 text-sm leading-relaxed mb-2 {% if comment.is_deleted %}text-gray-400 italic{% endif %}">
+                {{ comment.content|linebreaks }}
+            </div>
+            
+            <!-- Действия (только если не удалён) -->
+            {% if not comment.is_deleted %}
+            <div class="flex items-center space-x-2 text-xs text-gray-500 mb-3">
+                <!-- Голосование (HTMX) -->
+                {% include 'votes/partials/comment_vote.html' with comment=comment user_vote=comment.user_vote %}
+                
+                <!-- Ответить -->
+                <button 
+                    hx-get="{% url 'comments:reply_form' comment.id %}"
+                    hx-target="#reply-form-container-{{ comment.id }}"
+                    hx-swap="innerHTML"
+                    class="hover:bg-gray-100 px-2 py-1 rounded transition-colors font-medium"
+                >
+                    Ответить
+                </button>
+                
+                <!-- Поделиться -->
+                <button class="hover:bg-gray-100 px-2 py-1 rounded transition-colors">Поделиться</button>
+                
+                <!-- Сохранить -->
+                <button class="hover:bg-gray-100 px-2 py-1 rounded transition-colors">Сохранить</button>
+                
+                <!-- Редактировать (только автор) -->
+                {% if user == comment.author %}
+                <button 
+                    hx-get="{% url 'comments:edit' comment.id %}"
+                    hx-target="#comment-{{ comment.id }}"
+                    hx-swap="outerHTML"
+                    class="hover:bg-gray-100 px-2 py-1 rounded transition-colors"
+                >
+                    Редактировать
+                </button>
+                
+                <!-- Удалить -->
+                <button 
+                    hx-post="{% url 'comments:delete' comment.id %}"
+                    hx-target="#comment-{{ comment.id }}"
+                    hx-swap="outerHTML"
+                    hx-confirm="Удалить комментарий?"
+                    class="hover:bg-red-50 text-red-500 px-2 py-1 rounded transition-colors"
+                >
+                    Удалить
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Контейнер для формы ответа (HTMX вставляет сюда) -->
+            <div id="reply-form-container-{{ comment.id }}"></div>
+            
+            <!-- Контейнер для ответов на этот комментарий -->
+            <div id="replies-{{ comment.id }}" class="replies-container">
+                {% if comment.replies.exists %}
+                    {% for reply in comment.replies.all %}
+                        {% if not reply.is_deleted or reply.replies.exists %}
+                            {% include 'comments/partials/comment.html' with comment=reply %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

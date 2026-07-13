@@ -1,0 +1,21 @@
+{% if suggestions %}
+<div class="absolute top-0 left-0 right-0 bg-white rounded-lg shadow-lg border border-gray-200 mt-1 z-50 overflow-hidden">
+    {% for item in suggestions %}
+    <a href="{{ item.url }}" class="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0">
+        <span class="text-lg mr-3">
+            {% if item.type == 'post' %}📄
+            {% elif item.type == 'community' %}🏘
+            {% elif item.type == 'user' %}👤
+            {% endif %}
+        </span>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate">{{ item.title }}</p>
+            <p class="text-xs text-gray-500">{{ item.subtitle }}</p>
+        </div>
+    </a>
+    {% endfor %}
+    <a href="{% url 'search:results' %}?q={{ query|urlencode }}" class="block px-4 py-2 text-sm text-orange-600 hover:bg-orange-50 text-center font-medium">
+        Все результаты →
+    </a>
+</div>
+{% endif %}

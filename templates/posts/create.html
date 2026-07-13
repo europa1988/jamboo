@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Создать пост — Jamboo{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Скрываем/показываем поля в зависимости от типа поста */
+    .field-content, .field-url, .field-image {
+        display: none;
+    }
+    .field-content.active, .field-url.active, .field-image.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-xl shadow-sm p-8">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Создать пост</h1>
+        
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Выбор сообщества -->
+            <div>
+                <label for="{{ form.community.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.community.label }} *
+                </label>
+                {{ form.community }}
+                {% if form.community.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {% for error in form.community.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% if not form.community.field.queryset.exists %}
+                <p class="mt-1 text-sm text-orange-600">
+                    ⚠️ Сначала <a href="#" class="underline">создайте сообщество</a> или присоединитесь к существующему.
+                </p>
+                {% endif %}
+            </div>
+            
+            <!-- Тип поста -->
+            <div>
+                <label for="{{ form.post_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.post_type.label }}
+                </label>
+                {{ form.post_type }}
+                {% if form.post_type.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {% for error in form.post_type.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Заголовок -->
+            <div>
+                <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.title.label }} *
+                </label>
+                {{ form.title }}
+                <div class="mt-1 text-xs text-gray-400 flex justify-between">
+                    <span>Минимум 5 символов</span>
+                    <span id="title-counter">0/300</span>
+                </div>
+                {% if form.title.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {% for error in form.title.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Текст (для text-постов) -->
+            <div class="field-content" id="field-content">
+                <label for="{{ form.content.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.content.label }}
+                </label>
+                {{ form.content }}
+                {% if form.content.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {% for error in form.content.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Ссылка (для link-постов) -->
+            <div class="field-url" id="field-url">
+                <label for="{{ form.url.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.url.label }}
+                </label>
+                {{ form.url }}
+                {% if form.url.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {% for error in form.url.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Изображение (для image-постов) -->
+            <div class="field-image" id="field-image">
+                <label for="{{ form.image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.image.label }}
+                </label>
+                {{ form.image }}
+                {% if form.image.errors %}
+                <div class="mt-1 text-sm text-red-600">
+                    {% for error in form.image.errors %}
+                    <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Флаги -->
+            <div class="flex items-center space-x-6">
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    {{ form.is_nsfw }}
+                    <span class="text-sm text-gray-700">{{ form.is_nsfw.label }}</span>
+                </label>
+                <label class="flex items-center space-x-2 cursor-pointer">
+                    {{ form.is_spoiler }}
+                    <span class="text-sm text-gray-700">{{ form.is_spoiler.label }}</span>
+                </label>
+            </div>
+            
+            <!-- Общие ошибки -->
+            {% if form.non_field_errors %}
+            <div class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Кнопки -->
+            <div class="flex space-x-4 pt-4 border-t border-gray-100">
+                <button type="submit" class="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg transition-colors">
+                    Опубликовать
+                </button>
+                <a href="{% url 'posts:home' %}" class="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors">
+                    Отмена
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Переключение полей в зависимости от типа поста
+    const postTypeSelect = document.getElementById('id_post_type');
+    const fieldContent = document.getElementById('field-content');
+    const fieldUrl = document.getElementById('field-url');
+    const fieldImage = document.getElementById('field-image');
+    
+    function updateFields() {
+        const type = postTypeSelect.value;
+        
+        // Скрываем все
+        fieldContent.classList.remove('active');
+        fieldUrl.classList.remove('active');
+        fieldImage.classList.remove('active');
+        
+        // Показываем нужное
+        if (type === 'text') {
+            fieldContent.classList.add('active');
+        } else if (type === 'link') {
+            fieldUrl.classList.add('active');
+        } else if (type === 'image') {
+            fieldImage.classList.add('active');
+        }
+    }
+    
+    // Запускаем при загрузке и при изменении
+    postTypeSelect.addEventListener('change', updateFields);
+    updateFields();
+    
+    // Счётчик символов в заголовке
+    const titleInput = document.getElementById('id_title');
+    const titleCounter = document.getElementById('title-counter');
+    
+    titleInput.addEventListener('input', function() {
+        titleCounter.textContent = this.value.length + '/300';
+        if (this.value.length > 300) {
+            titleCounter.classList.add('text-red-500');
+        } else {
+            titleCounter.classList.remove('text-red-500');
+        }
+    });
+</script>
+{% endblock %}

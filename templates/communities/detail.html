@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}c/{{ community.name }} — Jamboo{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    
+    <!-- Шапка сообщества -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
+        <!-- Баннер -->
+        <div class="h-32 bg-gradient-to-r from-orange-400 to-orange-600 relative">
+            {% if community.banner %}
+            <img src="{{ community.banner.url }}" class="w-full h-full object-cover">
+            {% endif %}
+        </div>
+        
+        <div class="px-6 pb-6">
+            <div class="flex items-end -mt-10 mb-4">
+                <!-- Аватар -->
+                <div class="w-20 h-20 bg-white rounded-full p-1 shadow-md">
+                    {% if community.avatar %}
+                    <img src="{{ community.avatar.url }}" class="w-full h-full rounded-full object-cover">
+                    {% else %}
+                    <div class="w-full h-full rounded-full bg-orange-200 flex items-center justify-center text-orange-700 text-2xl font-bold">
+                        {{ community.name|first|upper }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="ml-4 mb-2 flex-1">
+                    <h1 class="text-2xl font-bold text-gray-900">c/{{ community.name }}</h1>
+                    <p class="text-sm text-gray-500">c/{{ community.slug }} • {{ community.member_count }} участников</p>
+                </div>
+                
+                <!-- Кнопка присоединения -->
+                <div class="mb-2">
+                    {% include 'communities/partials/join_button.html' %}
+                </div>
+            </div>
+            
+            <!-- Описание -->
+            <p class="text-gray-700 text-sm mb-4">{{ community.description }}</p>
+            
+            <!-- Навигация -->
+            <div class="flex items-center space-x-6 text-sm border-t border-gray-100 pt-4">
+                <a href="{% url 'communities:detail' community.slug %}" class="font-medium text-orange-600 border-b-2 border-orange-500 pb-3 -mb-4">Посты</a>
+                <a href="{% url 'communities:members' community.slug %}" class="font-medium text-gray-600 hover:text-gray-900 pb-3">Участники</a>
+                {% if user_role == 'admin' or user_role == 'moderator' %}
+                <a href="#" class="font-medium text-gray-600 hover:text-gray-900 pb-3">Модерация</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Посты сообщества -->
+    <div class="flex gap-6">
+        <div class="flex-1 max-w-2xl">
+            {% for post in posts %}
+            <article class="bg-white rounded-lg shadow-sm mb-3 hover:shadow-md transition-shadow">
+                <div class="flex">
+                    <!-- Голосование -->
+                    <div class="w-12 bg-gray-50 rounded-l-lg p-2 flex flex-col items-center">
+                        {% include 'votes/partials/post_vote.html' with post=post user_vote=post.user_vote %}
+                    </div>
+                    
+                    <!-- Контент -->
+                    <div class="flex-1 p-3">
+                        <div class="text-xs text-gray-500 mb-1">
+                            <span>{{ post.created_at|timesince }} назад</span>
+                            <span>•</span>
+                            <a href="{% url 'users:profile' post.author.username %}" class="hover:underline">u/{{ post.author.username }}</a>
+                            
+                            {% if post.is_nsfw %}
+                            <span class="bg-red-100 text-red-600 px-1.5 py-0.5 rounded text-[10px] font-bold ml-1">NSFW</span>
+                            {% endif %}
+                        </div>
+                        
+                        <a href="{{ post.get_absolute_url }}" class="block">
+                            <h2 class="text-lg font-semibold text-gray-900 mb-2 hover:underline">{{ post.title }}</h2>
+                        </a>
+                        
+                        {% if post.content %}
+                        <p class="text-gray-700 text-sm line-clamp-2">{{ post.content|truncatewords:30 }}</p>
+                        {% endif %}
+                        
+                        <div class="flex items-center space-x-4 mt-3 text-xs text-gray-500">
+                            <span>💬 {{ post.comment_count }} комментариев</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            {% empty %}
+            <div class="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500">
+                <p>Пока нет постов в этом сообществе</p>
+                {% if user.is_authenticated and is_member %}
+                <a href="{% url 'posts:create' %}" class="inline-block mt-3 bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-full text-sm font-medium transition-colors">
+                    Создать пост
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Сайдбар -->
+        <div class="w-72 hidden lg:block">
+            <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
+                <h3 class="font-bold text-gray-900 mb-3">О сообществе</h3>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <div class="flex justify-between">
+                        <span>Создано:</span>
+                        <span>{{ community.created_at|date:"d.m.Y" }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Участников:</span>
+                        <span class="font-medium">{{ community.member_count }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Постов:</span>
+                        <span class="font-medium">{{ community.posts.count }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Тип:</span>
+                        <span>{{ community.get_community_type_display }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Правила -->
+            {% if rules %}
+            <div class="bg-white rounded-lg shadow-sm p-4">
+                <h3 class="font-bold text-gray-900 mb-3">Правила</h3>
+                <ol class="space-y-2 text-sm text-gray-600 list-decimal list-inside">
+                    {% for rule in rules %}
+                    <li>{{ rule.title }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
