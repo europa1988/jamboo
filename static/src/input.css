@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Кастомные стили из index.html, которые не покрываются Tailwind */
+.voting-container {
+    @apply flex flex-col items-center gap-1 p-2 rounded-l-global bg-gray-50;
+}
+
+.vote-btn {
+    @apply p-1 rounded hover:bg-gray-200 transition-colors text-gray-500;
+}
+
+.vote-btn.active.up {
+    @apply text-jamboo-orange;
+}
+
+.vote-btn.active.down {
+    @apply text-blue-500;
+}
+
+.vote-count.positive {
+    @apply text-jamboo-orange font-bold;
+}
+
+.vote-count.negative {
+    @apply text-blue-500 font-bold;
+}
