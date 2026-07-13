@@ -2,7 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Кастомные стили из index.html, которые не покрываются Tailwind */
+/* Кастомные стили из base.html */
+body, button, input, textarea, select {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+.scrollbar-hidden::-webkit-scrollbar { display: none; }
+.scrollbar-hidden { -ms-overflow-style: none; scrollbar-width: none; }
+.text-balance { text-wrap: balance; }
+
+/* Мобильное меню */
+.mobile-menu { transform: translateX(-100%); transition: transform 0.3s ease; }
+.mobile-menu.active { transform: translateX(0); }
+
+/* Шапка */
+.header-gradient { background: linear-gradient(90deg, #1a5f9e 0%, #0a2a5a 100%); }
+.header-hidden { transform: translateY(-100%); }
+.header-visible { transform: translateY(0); }
+.header-transition { transition: transform 0.3s ease; }
+
+/* Аккордеон */
+.accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+.accordion-content.open { max-height: 500px; }
+
+/* Dropdown */
+.dropdown-user { position: relative; }
+.dropdown-menu { 
+    display: none; 
+    position: absolute; 
+    right: 0; 
+    margin-top: 0.5rem; 
+    background: white; 
+    border-radius: 16px; 
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+    min-width: 180px; 
+    z-index: 50; 
+    overflow: hidden;
+}
+.dropdown-menu.show { display: block; }
+.dropdown-menu a { 
+    display: flex; 
+    align-items: center; 
+    gap: 0.75rem; 
+    padding: 0.75rem 1rem; 
+    color: #374151; 
+    transition: background 0.2s; 
+}
+.dropdown-menu a:hover { background: #f6f7f8; }
+.dropdown-menu hr { margin: 0.25rem 0; border-color: #e5e7eb; }
+
+/* Кастомные радиусы */
+.rounded-global { border-radius: 16px; }
+.rounded-button { border-radius: 24px; }
+.rounded-small { border-radius: 8px; }
+
+/* Голосование */
 .voting-container {
     @apply flex flex-col items-center gap-1 p-2 rounded-l-global bg-gray-50;
 }
@@ -25,4 +79,85 @@
 
 .vote-count.negative {
     @apply text-blue-500 font-bold;
+}
+
+/* ==================== ТЁМНАЯ ТЕМА ==================== */
+.dark body { background-color: #1a2235; }
+
+.dark #leftSidebar, 
+.dark .w-80 > div, 
+.dark .bg-white:not(.dropdown-menu):not(header *):not(footer *), 
+.dark .dark\:bg-dark-card { 
+    background-color: #141b2d !important; 
+    border-color: #2a3550; 
+}
+
+.dark .flex-1.min-w-0 { 
+    background-color: transparent; 
+}
+
+.dark footer { 
+    background: linear-gradient(90deg, #0f1627 0%, #0a2a5a 100%) !important; 
+}
+
+.dark, 
+.dark .text-gray-700, 
+.dark .dark\:text-dark-text, 
+.dark .dark\:text-gray-300 { 
+    color: #e0e7ff; 
+}
+
+.dark .text-jamboo-dark-gray, 
+.dark .dark\:text-gray-400 { 
+    color: #a0abc0; 
+}
+
+.dark .vote-count { 
+    background-color: #0f1627; 
+    color: #e0e7ff; 
+}
+
+.dark .voting-container { 
+    background: linear-gradient(135deg, #0f1627 0%, #141b2d 100%); 
+}
+
+.dark .category-item:hover, 
+.dark .dark\:hover\:bg-gray-700:hover { 
+    background-color: #0f1627; 
+}
+
+.dark .border-jamboo-border, 
+.dark .dark\:border-dark-border { 
+    border-color: #2a3550; 
+}
+
+.dark .border-gray-200,
+.dark .border-gray-100 {
+    border-color: #2a3550;
+}
+
+.dark .text-jamboo-orange { 
+    color: #ff6b35; 
+}
+
+.dark .dropdown-menu { 
+    background: #1e1e1e; 
+    border: 1px solid #333; 
+}
+.dark .dropdown-menu a { 
+    color: #e0e0e0; 
+}
+.dark .dropdown-menu a:hover { 
+    background: #2a2a2a; 
+}
+.dark .dropdown-menu hr { 
+    border-color: #333; 
+}
+
+.dark .hover\:bg-gray-100:hover {
+    background-color: #1e293b;
+}
+
+.dark .mobile-menu {
+    background-color: #141b2d;
 }

@@ -7,14 +7,26 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'jamboo-orange': '#FF6B35',
-        'jamboo-dark-gray': '#6B7280',
-        'dark-card': '#1F2937',
-        'dark-text': '#F3F4F6',
+        'jamboo-orange': '#ff6b35',
+        'jamboo-dark': '#1a1a1b',
+        'jamboo-light-gray': '#f6f7f8',
+        'jamboo-dark-gray': '#818384',
+        'jamboo-blue': '#0079d3',
+        'jamboo-card-bg': '#f6f7f8',
+        'jamboo-border': '#e5e7eb',
+        'jamboo-footer': '#0f172a',
+        'jamboo-header-start': '#1a5f9e',
+        'jamboo-header-end': '#0a2a5a',
+        'dark-bg': '#121212',
+        'dark-card': '#1e1e1e',
+        'dark-text': '#e0e0e0',
+        'dark-border': '#333333',
       },
       borderRadius: {
-        'global': '12px',
-        'small': '8px',
+        'global': '16px',
+        'element': '12px',
+        'button': '24px',
+        'small': '8px'
       }
     },
   },
