@@ -17,9 +17,20 @@ class HomeView(ListView):
     paginate_by = 10
     
     def get_queryset(self):
-        return Post.objects.filter(is_deleted=False).select_related(
-            'author', 'community'
-        ).prefetch_related('votes').order_by('-created_at')
+        qs = Post.objects.filter(is_deleted=False).select_related('author', 'community')
+        if self.request.user.is_authenticated:
+            from django.db.models import Prefetch
+            from apps.votes.models import PostVote
+            qs = qs.prefetch_related(
+                Prefetch(
+                    'votes',
+                    queryset=PostVote.objects.filter(user=self.request.user),
+                    to_attr='user_votes'
+                )
+            )
+        else:
+            qs = qs.prefetch_related('votes')
+        return qs.order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -27,7 +38,10 @@ class HomeView(ListView):
         # Добавляем user_vote к постам
         if self.request.user.is_authenticated:
             for post in context['posts']:
-                post.user_vote = post.get_user_vote(self.request.user)
+                if hasattr(post, 'user_votes'):
+                    post.user_vote = post.user_votes[0].value if post.user_votes else None
+                else:
+                    post.user_vote = post.get_user_vote(self.request.user)
         
         # Популярные сообщества для сайдбара
         from apps.communities.models import Community
@@ -58,16 +72,52 @@ class PostDetailView(DetailView):
         # Голос пользователя за пост
         context['user_vote'] = post.get_user_vote(self.request.user)
         
-        # Комментарии верхнего уровня с user_vote
-        comments = post.comments.filter(
-            parent__isnull=True,
-            is_deleted=False
-        ).select_related('author').prefetch_related('replies', 'votes')
+        # Комментарии верхнего уровня с сохранением целостности дерева (включая удаленные, если у них есть ответы)
+        from django.db.models import Q, Prefetch
+        from apps.votes.models import CommentVote
+
+        comments_qs = post.comments.filter(
+            parent__isnull=True
+        ).filter(
+            Q(is_deleted=False) | Q(replies__isnull=False)
+        ).distinct().select_related('author')
+
+        if self.request.user.is_authenticated:
+            comments_qs = comments_qs.prefetch_related(
+                Prefetch(
+                    'votes',
+                    queryset=CommentVote.objects.filter(user=self.request.user),
+                    to_attr='user_votes'
+                ),
+                'replies',
+                'replies__author',
+                Prefetch(
+                    'replies__votes',
+                    queryset=CommentVote.objects.filter(user=self.request.user),
+                    to_attr='user_votes'
+                ),
+                'replies__replies',
+                'replies__replies__author',
+                Prefetch(
+                    'replies__replies__votes',
+                    queryset=CommentVote.objects.filter(user=self.request.user),
+                    to_attr='user_votes'
+                )
+            )
+        else:
+            comments_qs = comments_qs.prefetch_related(
+                'replies',
+                'replies__author',
+                'replies__votes',
+                'replies__replies',
+                'replies__replies__author',
+                'replies__replies__votes'
+            )
+
+        comments = list(comments_qs)
         
-        # Добавляем user_vote к каждому комментарию
+        # Добавляем user_vote к каждому комментарию и ответам
         for comment in comments:
-            comment.user_vote = comment.get_user_vote(self.request.user)
-            # Рекурсивно добавляем к ответам
             self._add_votes_to_replies(comment, self.request.user)
         
         context['comments'] = comments
@@ -76,8 +126,12 @@ class PostDetailView(DetailView):
     
     def _add_votes_to_replies(self, comment, user):
         """Рекурсивно добавляет user_vote к ответам."""
+        if hasattr(comment, 'user_votes'):
+            comment.user_vote = comment.user_votes[0].value if comment.user_votes else None
+        else:
+            comment.user_vote = comment.get_user_vote(user)
+
         for reply in comment.replies.all():
-            reply.user_vote = reply.get_user_vote(user)
             self._add_votes_to_replies(reply, user)
 
 
