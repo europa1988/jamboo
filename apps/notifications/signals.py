@@ -51,12 +51,17 @@ def create_post_vote_notification(sender, instance, created, **kwargs):
         return
     
     # Проверяем, не было ли уже уведомления недавно (чтобы не спамить)
+    from django.contrib.contenttypes.models import ContentType
+    from datetime import timedelta
+    post_type = ContentType.objects.get_for_model(instance.post)
+
     recent = Notification.objects.filter(
         recipient=instance.post.author,
         sender=instance.user,
         notification_type='upvote_post',
-        content_object=instance.post,
-        created_at__gte=instance.created_at.replace(minute=instance.created_at.minute - 5)
+        content_type=post_type,
+        object_id=instance.post.id,
+        created_at__gte=instance.created_at - timedelta(minutes=5)
     ).exists()
     
     if not recent:
