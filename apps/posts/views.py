@@ -6,8 +6,25 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy, reverse
 from django.http import HttpResponseForbidden
 
+from django.db.models import Prefetch
+from apps.votes.models import PostVote, CommentVote
 from .models import Post
 from .forms import PostCreateForm
+
+
+class CachedReplies:
+    """
+    Вспомогательный класс для кэширования ответов комментариев,
+    чтобы избежать N+1 запросов при обращении к comment.replies.all/exists в шаблоне.
+    """
+    def __init__(self, replies):
+        self._replies = replies
+
+    def all(self):
+        return self._replies
+
+    def exists(self):
+        return len(self._replies) > 0
 
 
 class HomeView(ListView):
@@ -17,9 +34,11 @@ class HomeView(ListView):
     paginate_by = 10
     
     def get_queryset(self):
-        return Post.objects.filter(is_deleted=False).select_related(
-            'author', 'community'
-        ).prefetch_related('votes').order_by('-created_at')
+        qs = Post.objects.filter(is_deleted=False).select_related('author', 'community').order_by('-created_at')
+        if self.request.user.is_authenticated:
+            user_votes = PostVote.objects.filter(user=self.request.user)
+            qs = qs.prefetch_related(Prefetch('votes', queryset=user_votes, to_attr='user_votes'))
+        return qs
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -27,7 +46,10 @@ class HomeView(ListView):
         # Добавляем user_vote к постам
         if self.request.user.is_authenticated:
             for post in context['posts']:
-                post.user_vote = post.get_user_vote(self.request.user)
+                post.user_vote = post.user_votes[0].value if getattr(post, 'user_votes', None) else None
+        else:
+            for post in context['posts']:
+                post.user_vote = None
         
         # Популярные сообщества для сайдбара
         from apps.communities.models import Community
@@ -44,8 +66,14 @@ class PostDetailView(DetailView):
     def get_object(self, queryset=None):
         community_slug = self.kwargs.get('community_slug')
         post_id = self.kwargs.get('post_id')
+
+        qs = Post.objects.select_related('author', 'community')
+        if self.request.user.is_authenticated:
+            user_votes = PostVote.objects.filter(user=self.request.user)
+            qs = qs.prefetch_related(Prefetch('votes', queryset=user_votes, to_attr='user_votes'))
+
         return get_object_or_404(
-            Post.objects.select_related('author', 'community'),
+            qs,
             id=post_id,
             community__slug=community_slug,
             is_deleted=False
@@ -56,29 +84,70 @@ class PostDetailView(DetailView):
         post = self.object
         
         # Голос пользователя за пост
-        context['user_vote'] = post.get_user_vote(self.request.user)
+        if self.request.user.is_authenticated:
+            context['user_vote'] = post.user_votes[0].value if getattr(post, 'user_votes', None) else None
+        else:
+            context['user_vote'] = None
         
         # Комментарии верхнего уровня с user_vote
-        comments = post.comments.filter(
-            parent__isnull=True,
-            is_deleted=False
-        ).select_related('author').prefetch_related('replies', 'votes')
+        comments_qs = post.comments.select_related('author')
+        if self.request.user.is_authenticated:
+            user_votes = CommentVote.objects.filter(user=self.request.user)
+            comments_qs = comments_qs.prefetch_related(Prefetch('votes', queryset=user_votes, to_attr='user_votes'))
+
+        all_comments = list(comments_qs.order_by('created_at'))
+
+        # Устанавливаем user_vote для каждого комментария
+        for comment in all_comments:
+            comment.user_vote = comment.user_votes[0].value if getattr(comment, 'user_votes', None) else None
+
+        # Структурируем древовидную структуру в памяти
+        replies_map = {c.id: [] for c in all_comments}
+        for c in all_comments:
+            if c.parent_id and c.parent_id in replies_map:
+                replies_map[c.parent_id].append(c)
+
+        # Рекурсивный хелпер для проверки наличия неудалённых ответов
+        def has_non_deleted_descendants(comment_id):
+            for reply in replies_map.get(comment_id, []):
+                if not reply.is_deleted or has_non_deleted_descendants(reply.id):
+                    return True
+            return False
+
+        # Заполняем CachedReplies для каждого комментария
+        for c in all_comments:
+            all_replies = replies_map.get(c.id, [])
+            active_replies = []
+            for reply in all_replies:
+                if not reply.is_deleted or has_non_deleted_descendants(reply.id):
+                    active_replies.append(reply)
+            c._cached_replies = CachedReplies(active_replies)
+
+        # Временно подменяем дескриптор replies класса Comment
+        from apps.comments.models import Comment as CommentModel
+        original_descriptor = CommentModel.replies
         
-        # Добавляем user_vote к каждому комментарию
-        for comment in comments:
-            comment.user_vote = comment.get_user_vote(self.request.user)
-            # Рекурсивно добавляем к ответам
-            self._add_votes_to_replies(comment, self.request.user)
+        def get_replies(self_comment):
+            if hasattr(self_comment, '_cached_replies'):
+                return self_comment._cached_replies
+            return original_descriptor.__get__(self_comment, CommentModel)
+
+        CommentModel.replies = property(get_replies)
         
-        context['comments'] = comments
+        try:
+            # Выбираем только корневые комментарии (parent_id is None)
+            root_comments = []
+            for c in all_comments:
+                if c.parent_id is None:
+                    if not c.is_deleted or has_non_deleted_descendants(c.id):
+                        root_comments.append(c)
+
+            context['comments'] = root_comments
+        finally:
+            # Восстанавливаем оригинальный дескриптор
+            CommentModel.replies = original_descriptor
         
         return context
-    
-    def _add_votes_to_replies(self, comment, user):
-        """Рекурсивно добавляет user_vote к ответам."""
-        for reply in comment.replies.all():
-            reply.user_vote = reply.get_user_vote(user)
-            self._add_votes_to_replies(reply, user)
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
