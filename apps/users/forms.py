@@ -25,8 +25,7 @@ class RegisterForm(UserCreationForm):
     
     class Meta:
         model = User  # Используем нашу кастомную модель User
-        fields = ['username', 'email', 'password1', 'password2']
-        # password1 — пароль, password2 — подтверждение пароля
+        fields = ['username', 'email']
     
     def __init__(self, *args, **kwargs):
         """

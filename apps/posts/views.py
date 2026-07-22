@@ -8,6 +8,26 @@ from django.http import HttpResponseForbidden
 
 from .models import Post
 from .forms import PostCreateForm
+from apps.comments.models import Comment
+
+original_replies_descriptor = Comment.replies
+
+
+class CustomRepliesDescriptor:
+    def __init__(self, original):
+        self.original = original
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        if hasattr(instance, '_precalculated_replies'):
+            class MockManager:
+                def __init__(self, replies_list):
+                    self.replies_list = replies_list
+                def all(self):
+                    return self.replies_list
+            return MockManager(instance._precalculated_replies)
+        return self.original.__get__(instance, owner)
 
 
 class HomeView(ListView):
@@ -41,6 +61,13 @@ class PostDetailView(DetailView):
     template_name = 'posts/detail.html'
     context_object_name = 'post'
     
+    def get(self, request, *args, **kwargs):
+        Comment.replies = CustomRepliesDescriptor(original_replies_descriptor)
+        try:
+            return super().get(request, *args, **kwargs)
+        finally:
+            Comment.replies = original_replies_descriptor
+
     def get_object(self, queryset=None):
         community_slug = self.kwargs.get('community_slug')
         post_id = self.kwargs.get('post_id')
@@ -58,27 +85,47 @@ class PostDetailView(DetailView):
         # Голос пользователя за пост
         context['user_vote'] = post.get_user_vote(self.request.user)
         
-        # Комментарии верхнего уровня с user_vote
-        comments = post.comments.filter(
-            parent__isnull=True,
-            is_deleted=False
-        ).select_related('author').prefetch_related('replies', 'votes')
+        # Получаем все комментарии для поста (включая удалённые)
+        all_comments = list(post.comments.all().select_related('author').prefetch_related('votes'))
         
-        # Добавляем user_vote к каждому комментарию
-        for comment in comments:
-            comment.user_vote = comment.get_user_vote(self.request.user)
-            # Рекурсивно добавляем к ответам
-            self._add_votes_to_replies(comment, self.request.user)
+        comment_by_id = {c.id: c for c in all_comments}
+        children_map = {}
+        for c in all_comments:
+            if c.parent_id:
+                children_map.setdefault(c.parent_id, []).append(c)
+
+        has_active_descendants_cache = {}
+
+        def has_active_descendant(comment_id):
+            if comment_id in has_active_descendants_cache:
+                return has_active_descendants_cache[comment_id]
+
+            for child in children_map.get(comment_id, []):
+                if not child.is_deleted:
+                    has_active_descendants_cache[comment_id] = True
+                    return True
+                if has_active_descendant(child.id):
+                    has_active_descendants_cache[comment_id] = True
+                    return True
+
+            has_active_descendants_cache[comment_id] = False
+            return False
+
+        # Оставляем только те комментарии, которые либо не удалены, либо имеют неудалённые ответы
+        keep_comments = [c for c in all_comments if not c.is_deleted or has_active_descendant(c.id)]
+        keep_comments_set = set(keep_comments)
+        
+        for c in keep_comments:
+            child_replies = [child for child in children_map.get(c.id, []) if child in keep_comments_set]
+            child_replies.sort(key=lambda x: x.created_at)
+            c._precalculated_replies = child_replies
+            c.user_vote = c.get_user_vote(self.request.user)
+
+        comments = [c for c in keep_comments if c.parent_id is None]
+        comments.sort(key=lambda x: x.created_at)
         
         context['comments'] = comments
-        
         return context
-    
-    def _add_votes_to_replies(self, comment, user):
-        """Рекурсивно добавляет user_vote к ответам."""
-        for reply in comment.replies.all():
-            reply.user_vote = reply.get_user_vote(user)
-            self._add_votes_to_replies(reply, user)
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
