@@ -141,3 +141,6 @@ LOGIN_REDIRECT_URL = '/'
 
 # Куда перенаправлять, если требуется авторизация
 LOGIN_URL = '/login/'
+
+# Путь для сборки статических файлов
+STATIC_ROOT = BASE_DIR / 'staticfiles'
