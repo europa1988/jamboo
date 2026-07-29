@@ -47,6 +47,7 @@ class Community(models.Model):
     )
     # Количество участников (кэшируем для быстроты)
     member_count = models.PositiveIntegerField(default=0, verbose_name='Участников')
+    is_active = models.BooleanField(default=True, verbose_name="Активно")
     
     class Meta:
         verbose_name = 'Сообщество'
