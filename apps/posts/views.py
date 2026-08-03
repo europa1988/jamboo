@@ -58,11 +58,13 @@ class PostDetailView(DetailView):
         # Голос пользователя за пост
         context['user_vote'] = post.get_user_vote(self.request.user)
         
-        # Комментарии верхнего уровня с user_vote
+        # Комментарии верхнего уровня с user_vote (сохраняем целостность дерева комментариев)
+        from django.db.models import Q
         comments = post.comments.filter(
-            parent__isnull=True,
-            is_deleted=False
-        ).select_related('author').prefetch_related('replies', 'votes')
+            parent__isnull=True
+        ).filter(
+            Q(is_deleted=False) | Q(replies__isnull=False)
+        ).distinct().select_related('author').prefetch_related('replies', 'votes')
         
         # Добавляем user_vote к каждому комментарию
         for comment in comments:
