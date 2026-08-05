@@ -39,6 +39,7 @@ class Community(models.Model):
         verbose_name='Баннер'
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
+    is_active = models.BooleanField(default=True, verbose_name='Активно')
     # Создатель сообщества
     creator = models.ForeignKey(
         settings.AUTH_USER_MODEL,
