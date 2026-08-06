@@ -72,7 +72,10 @@ class Post(models.Model):
         """
         if not user or not user.is_authenticated:
             return None
-        vote = self.votes.filter(user=user).first()
+        if hasattr(self, 'user_votes_cache'):
+            vote = self.user_votes_cache[0] if self.user_votes_cache else None
+        else:
+            vote = self.votes.filter(user=user).first()
         return vote.value if vote else None
     
     def update_score(self):
