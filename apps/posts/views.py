@@ -17,9 +17,18 @@ class HomeView(ListView):
     paginate_by = 10
     
     def get_queryset(self):
-        return Post.objects.filter(is_deleted=False).select_related(
+        qs = Post.objects.filter(is_deleted=False).select_related(
             'author', 'community'
-        ).prefetch_related('votes').order_by('-created_at')
+        ).order_by('-created_at')
+        if self.request.user.is_authenticated:
+            from django.db.models import Prefetch
+            from apps.votes.models import PostVote
+            qs = qs.prefetch_related(
+                Prefetch('votes', queryset=PostVote.objects.filter(user=self.request.user), to_attr='user_votes_cache')
+            )
+        else:
+            qs = qs.prefetch_related('votes')
+        return qs
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -44,8 +53,15 @@ class PostDetailView(DetailView):
     def get_object(self, queryset=None):
         community_slug = self.kwargs.get('community_slug')
         post_id = self.kwargs.get('post_id')
+        qs = Post.objects.select_related('author', 'community')
+        if self.request.user.is_authenticated:
+            from django.db.models import Prefetch
+            from apps.votes.models import PostVote
+            qs = qs.prefetch_related(
+                Prefetch('votes', queryset=PostVote.objects.filter(user=self.request.user), to_attr='user_votes_cache')
+            )
         return get_object_or_404(
-            Post.objects.select_related('author', 'community'),
+            qs,
             id=post_id,
             community__slug=community_slug,
             is_deleted=False
@@ -62,7 +78,20 @@ class PostDetailView(DetailView):
         comments = post.comments.filter(
             parent__isnull=True,
             is_deleted=False
-        ).select_related('author').prefetch_related('replies', 'votes')
+        ).select_related('author')
+
+        if self.request.user.is_authenticated:
+            from django.db.models import Prefetch
+            from apps.votes.models import CommentVote
+            from apps.comments.models import Comment
+            comments = comments.prefetch_related(
+                Prefetch('votes', queryset=CommentVote.objects.filter(user=self.request.user), to_attr='user_votes_cache'),
+                Prefetch('replies', queryset=Comment.objects.select_related('author').prefetch_related(
+                    Prefetch('votes', queryset=CommentVote.objects.filter(user=self.request.user), to_attr='user_votes_cache')
+                ))
+            )
+        else:
+            comments = comments.prefetch_related('replies', 'votes')
         
         # Добавляем user_vote к каждому комментарию
         for comment in comments:
