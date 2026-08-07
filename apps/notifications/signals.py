@@ -1,5 +1,7 @@
+import datetime
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.contrib.contenttypes.models import ContentType
 
 from apps.comments.models import Comment
 from apps.votes.models import PostVote, CommentVote
@@ -50,13 +52,15 @@ def create_post_vote_notification(sender, instance, created, **kwargs):
     if instance.post.author == instance.user:
         return
     
+    post_type = ContentType.objects.get_for_model(instance.post)
     # Проверяем, не было ли уже уведомления недавно (чтобы не спамить)
     recent = Notification.objects.filter(
         recipient=instance.post.author,
         sender=instance.user,
         notification_type='upvote_post',
-        content_object=instance.post,
-        created_at__gte=instance.created_at.replace(minute=instance.created_at.minute - 5)
+        content_type=post_type,
+        object_id=instance.post.id,
+        created_at__gte=instance.created_at - datetime.timedelta(minutes=5)
     ).exists()
     
     if not recent:
