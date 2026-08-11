@@ -10,6 +10,7 @@ class Notification(models.Model):
     """
     TYPE_CHOICES = [
         ('reply', 'Ответ на комментарий'),
+        ('comment_post', 'Новый комментарий к посту'),
         ('mention', 'Упоминание'),
         ('upvote_post', 'Апвоут поста'),
         ('upvote_comment', 'Апвоут комментария'),
