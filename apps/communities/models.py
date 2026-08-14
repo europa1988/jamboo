@@ -26,6 +26,7 @@ class Community(models.Model):
         default=PUBLIC,
         verbose_name='Тип'
     )
+    is_active = models.BooleanField(default=True, verbose_name='Активно')
     avatar = models.ImageField(
         upload_to='community_avatars/',
         blank=True,
