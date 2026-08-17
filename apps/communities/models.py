@@ -45,6 +45,8 @@ class Community(models.Model):
         on_delete=models.CASCADE,
         related_name='created_communities'
     )
+    # Активность сообщества
+    is_active = models.BooleanField(default=True, verbose_name='Активно')
     # Количество участников (кэшируем для быстроты)
     member_count = models.PositiveIntegerField(default=0, verbose_name='Участников')
     
