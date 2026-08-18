@@ -18,6 +18,10 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('users:profile', kwargs={'username': self.username})
+
 
 class UserProfile(models.Model):
     """
