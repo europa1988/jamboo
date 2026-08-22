@@ -45,7 +45,8 @@ class Community(models.Model):
         on_delete=models.CASCADE,
         related_name='created_communities'
     )
-    # Количество участников (кэшируем для быстроты)
+    # Активность и количество участников (кэшируем для быстроты)
+    is_active = models.BooleanField(default=True, verbose_name='Активно')
     member_count = models.PositiveIntegerField(default=0, verbose_name='Участников')
     
     class Meta:
@@ -55,6 +56,10 @@ class Community(models.Model):
     
     def __str__(self):
         return f'c/{self.name}'
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('communities:detail', kwargs={'slug': self.slug or 'community'})
 
 
 class CommunityMember(models.Model):
