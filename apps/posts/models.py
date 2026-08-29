@@ -97,14 +97,21 @@ class Post(models.Model):
     def __str__(self):
         return self.title[:50]
     
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            self.slug = slugify(self.title) or 'post'
+        super().save(*args, **kwargs)
+
     def get_absolute_url(self):
         """
         Возвращает URL поста. Используется в шаблонах.
         """
+        slug = self.slug or 'post'
         return reverse('posts:detail', kwargs={
             'community_slug': self.community.slug,
             'post_id': self.id,
-            'post_slug': self.slug
+            'post_slug': slug
         })
 
 
