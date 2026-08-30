@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.urls import reverse
 
 
 class Community(models.Model):
@@ -26,6 +27,7 @@ class Community(models.Model):
         default=PUBLIC,
         verbose_name='Тип'
     )
+    is_active = models.BooleanField(default=True, verbose_name='Активно')
     avatar = models.ImageField(
         upload_to='community_avatars/',
         blank=True,
@@ -55,6 +57,9 @@ class Community(models.Model):
     
     def __str__(self):
         return f'c/{self.name}'
+
+    def get_absolute_url(self):
+        return reverse('communities:detail', kwargs={'slug': self.slug})
 
 
 class CommunityMember(models.Model):
