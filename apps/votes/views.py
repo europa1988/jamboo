@@ -35,12 +35,10 @@ def vote_post(request, post_id):
     post.update_score()
     post.refresh_from_db()
     
-    html = render_to_string('votes/partials/post_vote.html', {
+    return render(request, 'votes/partials/post_vote.html', {
         'post': post,
         'user_vote': post.get_user_vote(request.user)
-    }, request=request)
-    
-    return HttpResponse(html)
+    })
 
 
 @login_required
@@ -70,9 +68,7 @@ def vote_comment(request, comment_id):
     comment.update_score()
     comment.refresh_from_db()
     
-    html = render_to_string('votes/partials/comment_vote.html', {
+    return render(request, 'votes/partials/comment_vote.html', {
         'comment': comment,
         'user_vote': comment.get_user_vote(request.user)
-    }, request=request)
-    
-    return HttpResponse(html)
+    })
