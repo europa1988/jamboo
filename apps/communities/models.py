@@ -47,6 +47,7 @@ class Community(models.Model):
     )
     # Количество участников (кэшируем для быстроты)
     member_count = models.PositiveIntegerField(default=0, verbose_name='Участников')
+    is_active = models.BooleanField(default=True, verbose_name='Активно')
     
     class Meta:
         verbose_name = 'Сообщество'
@@ -55,6 +56,10 @@ class Community(models.Model):
     
     def __str__(self):
         return f'c/{self.name}'
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('communities:detail', kwargs={'slug': self.slug})
 
 
 class CommunityMember(models.Model):

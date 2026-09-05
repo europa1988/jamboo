@@ -32,12 +32,9 @@ def notification_badge(request):
     Возвращает HTML бейджа с количеством непрочитанных (HTMX polling).
     """
     count = request.user.notifications.filter(is_read=False).count()
-    
-    html = render_to_string('notifications/partials/badge.html', {
+    return render(request, 'notifications/partials/badge.html', {
         'unread_count': count
-    }, request=request)
-    
-    return HttpResponse(html)
+    })
 
 
 @login_required
@@ -56,11 +53,9 @@ def notification_mark_read(request, notification_id):
     notification.save(update_fields=['is_read'])
     
     # Возвращаем обновлённый элемент
-    html = render_to_string('notifications/partials/notification_item.html', {
+    return render(request, 'notifications/partials/notification_item.html', {
         'notification': notification
-    }, request=request)
-    
-    return HttpResponse(html)
+    })
 
 
 @login_required
@@ -72,11 +67,9 @@ def notification_mark_all_read(request):
     request.user.notifications.filter(is_read=False).update(is_read=True)
     
     # Возвращаем пустой бейдж
-    html = render_to_string('notifications/partials/badge.html', {
+    return render(request, 'notifications/partials/badge.html', {
         'unread_count': 0
-    }, request=request)
-    
-    return HttpResponse(html)
+    })
 
 
 @login_required
