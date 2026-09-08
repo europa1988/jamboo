@@ -1,0 +1,4 @@
+Watching for file changes with StatReloader
+[08/Sep/2026 21:44:28] "HEAD / HTTP/1.1" 200 0
+[08/Sep/2026 21:45:08] "GET /search/?q=Django&type=posts HTTP/1.1" 200 10874
+[08/Sep/2026 21:45:08] "GET /static/css/output.css HTTP/1.1" 200 38982

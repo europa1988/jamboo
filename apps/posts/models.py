@@ -88,12 +88,19 @@ class Post(models.Model):
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
         ordering = ['-created_at']
+        unique_together = ['community', 'slug']
         indexes = [
             models.Index(fields=['-created_at']),
             models.Index(fields=['community', '-created_at']),
             models.Index(fields=['author', '-created_at']),
         ]
     
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            self.slug = slugify(self.title) or 'post'
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title[:50]
     
@@ -101,10 +108,12 @@ class Post(models.Model):
         """
         Возвращает URL поста. Используется в шаблонах.
         """
+        community_slug = self.community.slug if self.community else 'c'
+        post_slug = self.slug or 'post'
         return reverse('posts:detail', kwargs={
-            'community_slug': self.community.slug,
+            'community_slug': community_slug,
             'post_id': self.id,
-            'post_slug': self.slug
+            'post_slug': post_slug
         })
 
 
