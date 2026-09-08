@@ -62,12 +62,11 @@ def comment_create(request, post_id):
     
     # Если HTMX-запрос — возвращаем HTML нового комментария
     if request.headers.get('HX-Request'):
-        html = render_to_string('comments/partials/comment.html', {
+        return render(request, 'comments/partials/comment.html', {
             'comment': comment,
             'user': request.user,
             'post': post
-        }, request=request)
-        return HttpResponse(html)
+        })
     
     messages.success(request, 'Комментарий добавлен!')
     return redirect('posts:detail',
@@ -116,12 +115,11 @@ def comment_edit(request, comment_id):
             comment.save()
             
             if request.headers.get('HX-Request'):
-                html = render_to_string('comments/partials/comment.html', {
+                return render(request, 'comments/partials/comment.html', {
                     'comment': comment,
                     'user': request.user,
                     'post': comment.post
-                }, request=request)
-                return HttpResponse(html)
+                })
             
             messages.success(request, 'Комментарий обновлён.')
             return redirect('posts:detail',
@@ -170,12 +168,11 @@ def comment_delete(request, comment_id):
     post.save()
     
     if request.headers.get('HX-Request'):
-        html = render_to_string('comments/partials/comment.html', {
+        return render(request, 'comments/partials/comment.html', {
             'comment': comment,
             'user': request.user,
             'post': post
-        }, request=request)
-        return HttpResponse(html)
+        })
     
     messages.success(request, 'Комментарий удалён.')
     return redirect('posts:detail',
