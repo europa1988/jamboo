@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
+from django.utils.text import slugify
 
 
 class Post(models.Model):
@@ -23,7 +24,7 @@ class Post(models.Model):
     ]
     
     title = models.CharField(max_length=300, verbose_name='Заголовок')
-    slug = models.SlugField(max_length=300, verbose_name='URL')
+    slug = models.SlugField(max_length=300, blank=True, verbose_name='URL')
     content = models.TextField(blank=True, verbose_name='Текст')
     url = models.URLField(blank=True, verbose_name='Внешняя ссылка')
     post_type = models.CharField(
@@ -84,6 +85,11 @@ class Post(models.Model):
         self.score = result['total'] or 0
         self.save(update_fields=['score'])
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title) or 'post'
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
@@ -104,7 +110,7 @@ class Post(models.Model):
         return reverse('posts:detail', kwargs={
             'community_slug': self.community.slug,
             'post_id': self.id,
-            'post_slug': self.slug
+            'post_slug': self.slug or 'post'
         })
 
 
