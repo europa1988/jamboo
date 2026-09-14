@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.urls import reverse
 
 
 class Community(models.Model):
@@ -45,6 +46,7 @@ class Community(models.Model):
         on_delete=models.CASCADE,
         related_name='created_communities'
     )
+    is_active = models.BooleanField(default=True, verbose_name="Автоматно/Активно")
     # Количество участников (кэшируем для быстроты)
     member_count = models.PositiveIntegerField(default=0, verbose_name='Участников')
     
@@ -55,6 +57,9 @@ class Community(models.Model):
     
     def __str__(self):
         return f'c/{self.name}'
+
+    def get_absolute_url(self):
+        return reverse('communities:detail', kwargs={'slug': self.slug})
 
 
 class CommunityMember(models.Model):
