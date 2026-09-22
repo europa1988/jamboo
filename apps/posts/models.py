@@ -85,6 +85,7 @@ class Post(models.Model):
         self.save(update_fields=['score'])
 
     class Meta:
+        unique_together = ['community', 'slug']
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
         ordering = ['-created_at']
