@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.urls import reverse
 
 
 class Community(models.Model):
@@ -38,6 +39,7 @@ class Community(models.Model):
         null=True,
         verbose_name='Баннер'
     )
+    is_active = models.BooleanField(default=True, verbose_name='Автономно/Активно')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создано')
     # Создатель сообщества
     creator = models.ForeignKey(
@@ -55,6 +57,9 @@ class Community(models.Model):
     
     def __str__(self):
         return f'c/{self.name}'
+
+    def get_absolute_url(self):
+        return reverse('communities:detail', kwargs={'slug': self.slug})
 
 
 class CommunityMember(models.Model):
