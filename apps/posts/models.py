@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
+from django.utils.text import slugify
 
 
 class Post(models.Model):
@@ -65,6 +66,12 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
     edited_at = models.DateTimeField(null=True, blank=True, verbose_name='Изменён')
     
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title) or "post"
+            self.slug = base_slug[:300]
+        super().save(*args, **kwargs)
+
     def get_user_vote(self, user):
         """
         Возвращает голос текущего пользователя за этот пост.
@@ -101,10 +108,12 @@ class Post(models.Model):
         """
         Возвращает URL поста. Используется в шаблонах.
         """
+        community_slug = self.community.slug if self.community and self.community.slug else 'c'
+        post_slug = self.slug if self.slug else 'post'
         return reverse('posts:detail', kwargs={
-            'community_slug': self.community.slug,
+            'community_slug': community_slug,
             'post_id': self.id,
-            'post_slug': self.slug
+            'post_slug': post_slug
         })
 
 
