@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
+from slugify import slugify
 
 
 class Post(models.Model):
@@ -65,6 +66,17 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Создан')
     edited_at = models.DateTimeField(null=True, blank=True, verbose_name='Изменён')
     
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title) or 'post'
+            slug = base_slug
+            count = 1
+            while Post.objects.filter(community=self.community, slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{count}"
+                count += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
     def get_user_vote(self, user):
         """
         Возвращает голос текущего пользователя за этот пост.
@@ -88,6 +100,7 @@ class Post(models.Model):
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
         ordering = ['-created_at']
+        unique_together = ['community', 'slug']
         indexes = [
             models.Index(fields=['-created_at']),
             models.Index(fields=['community', '-created_at']),
@@ -101,10 +114,11 @@ class Post(models.Model):
         """
         Возвращает URL поста. Используется в шаблонах.
         """
+        community_slug = self.community.slug if self.community else 'general'
         return reverse('posts:detail', kwargs={
-            'community_slug': self.community.slug,
+            'community_slug': community_slug,
             'post_id': self.id,
-            'post_slug': self.slug
+            'post_slug': self.slug or 'post'
         })
 
 
