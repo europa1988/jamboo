@@ -145,12 +145,11 @@ def community_join(request, slug):
     
     # HTMX — возвращаем обновлённую кнопку
     if request.headers.get('HX-Request'):
-        html = render_to_string('communities/partials/join_button.html', {
+        return render(request, 'communities/partials/join_button.html', {
             'community': community,
             'is_member': True,
             'user_role': 'member'
-        }, request=request)
-        return HttpResponse(html)
+        })
     
     messages.success(request, f'Вы присоединились к c/{community.name}!')
     return redirect('communities:detail', slug=slug)
@@ -189,12 +188,11 @@ def community_leave(request, slug):
     
     # HTMX — возвращаем обновлённую кнопку
     if request.headers.get('HX-Request'):
-        html = render_to_string('communities/partials/join_button.html', {
+        return render(request, 'communities/partials/join_button.html', {
             'community': community,
             'is_member': False,
             'user_role': None
-        }, request=request)
-        return HttpResponse(html)
+        })
     
     messages.success(request, f'Вы покинули c/{community.name}.')
     return redirect('communities:detail', slug=slug)

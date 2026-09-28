@@ -84,10 +84,18 @@ class Post(models.Model):
         self.score = result['total'] or 0
         self.save(update_fields=['score'])
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from slugify import slugify
+            generated_slug = slugify(self.title or '')
+            self.slug = generated_slug if generated_slug else 'post'
+        super().save(*args, **kwargs)
+
     class Meta:
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
         ordering = ['-created_at']
+        unique_together = ['community', 'slug']
         indexes = [
             models.Index(fields=['-created_at']),
             models.Index(fields=['community', '-created_at']),
@@ -101,10 +109,11 @@ class Post(models.Model):
         """
         Возвращает URL поста. Используется в шаблонах.
         """
+        post_slug = self.slug or 'post'
         return reverse('posts:detail', kwargs={
             'community_slug': self.community.slug,
             'post_id': self.id,
-            'post_slug': self.slug
+            'post_slug': post_slug
         })
 
 

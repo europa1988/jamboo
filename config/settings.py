@@ -132,6 +132,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Настройки статических файлов (CSS, JS)
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Указываем Django использовать нашу модель User вместо стандартной
 AUTH_USER_MODEL = 'users.User'

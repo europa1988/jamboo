@@ -169,12 +169,10 @@ def follow_user(request, username):
         )
         is_following = True
     
-    html = render_to_string('users/partials/follow_button.html', {
+    return render(request, 'users/partials/follow_button.html', {
         'profile_user': target_user,
         'is_following': is_following
-    }, request=request)
-    
-    return HttpResponse(html)
+    })
 
 
 @login_required
