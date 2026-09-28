@@ -1,0 +1,4 @@
+Watching for file changes with StatReloader
+[28/Sep/2026 22:08:41] "HEAD / HTTP/1.1" 200 0
+[28/Sep/2026 22:09:33] "GET /search/?q=test HTTP/1.1" 200 10864
+[28/Sep/2026 22:09:33] "GET /static/css/output.css HTTP/1.1" 200 38982
