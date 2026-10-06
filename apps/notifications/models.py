@@ -9,6 +9,7 @@ class Notification(models.Model):
     Уведомление пользователя.
     """
     TYPE_CHOICES = [
+        ('comment_post', 'Комментарий к посту'),
         ('reply', 'Ответ на комментарий'),
         ('mention', 'Упоминание'),
         ('upvote_post', 'Апвоут поста'),
