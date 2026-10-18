@@ -88,6 +88,7 @@ class Post(models.Model):
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
         ordering = ['-created_at']
+        unique_together = ['community', 'slug']
         indexes = [
             models.Index(fields=['-created_at']),
             models.Index(fields=['community', '-created_at']),
@@ -96,15 +97,22 @@ class Post(models.Model):
     
     def __str__(self):
         return self.title[:50]
-    
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from slugify import slugify
+            self.slug = slugify(self.title) or 'post'
+        super().save(*args, **kwargs)
+
     def get_absolute_url(self):
         """
         Возвращает URL поста. Используется в шаблонах.
         """
+        slug = self.slug or 'post'
         return reverse('posts:detail', kwargs={
             'community_slug': self.community.slug,
             'post_id': self.id,
-            'post_slug': self.slug
+            'post_slug': slug
         })
 
 
