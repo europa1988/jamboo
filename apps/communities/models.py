@@ -45,6 +45,7 @@ class Community(models.Model):
         on_delete=models.CASCADE,
         related_name='created_communities'
     )
+    is_active = models.BooleanField(default=True, verbose_name='Активно')
     # Количество участников (кэшируем для быстроты)
     member_count = models.PositiveIntegerField(default=0, verbose_name='Участников')
     
@@ -53,6 +54,10 @@ class Community(models.Model):
         verbose_name_plural = 'Сообщества'
         ordering = ['-member_count']  # Сортировка по популярности
     
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('communities:detail', kwargs={'slug': self.slug})
+
     def __str__(self):
         return f'c/{self.name}'
 

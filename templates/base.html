@@ -72,8 +72,8 @@
 
                 <div class="dropdown-user relative">
                     <button id="userMenuBtn" class="flex items-center gap-2 bg-white/20 px-2 py-1 rounded-button hover:bg-white/30 transition cursor-pointer">
-                        {% if user.avatar %}
-                        <img src="{{ user.avatar.url }}" alt="" class="w-7 h-7 rounded-full object-cover">
+                        {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" alt="" class="w-7 h-7 rounded-full object-cover">
                         {% else %}
                         <div class="w-7 h-7 rounded-full bg-orange-200 flex items-center justify-center text-orange-700 text-xs font-bold">
                             {{ user.username|first|upper }}
