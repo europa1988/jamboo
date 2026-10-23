@@ -15,6 +15,10 @@ class User(AbstractUser):
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
     
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('users:profile', kwargs={'username': self.username})
+
     def __str__(self):
         return self.username
 

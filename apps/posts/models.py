@@ -94,6 +94,12 @@ class Post(models.Model):
             models.Index(fields=['author', '-created_at']),
         ]
     
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from slugify import slugify
+            self.slug = slugify(self.title, max_length=300) or 'post'
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title[:50]
     
