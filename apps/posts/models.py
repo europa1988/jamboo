@@ -88,6 +88,7 @@ class Post(models.Model):
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
         ordering = ['-created_at']
+        unique_together = ['community', 'slug']
         indexes = [
             models.Index(fields=['-created_at']),
             models.Index(fields=['community', '-created_at']),
